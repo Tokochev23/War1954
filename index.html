@@ -1,509 +1,746 @@
-// ============================================================
-// ARQUIVO: public/index.html
-// ------------------------------------------------------------
-// Este é o arquivo HTML principal. A aplicação React será
-// injetada no elemento com o ID 'root'.
-// ============================================================
-/*
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>RPG 1954 - Portal Oficial</title>
+    <!-- Inclui o Tailwind CSS para o design -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inclui as bibliotecas do React, ReactDOM e Babel -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Inclui a biblioteca Lucide para ícones -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.292.0/css/lucide.css">
+    
+    <!-- Inclui a biblioteca Framer Motion -->
+    <script src="https://cdn.jsdelivr.net/npm/framer-motion@10.16.4/dist/framer-motion.js"></script>
+
+    <!-- Inclui as bibliotecas do Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
+    
+    <style>
+        body { 
+            font-family: sans-serif;
+            background-color: #0d0d0d;
+            color: #f3f4f6;
+        }
+    </style>
 </head>
-<body>
+<body class="bg-gray-950 text-gray-100 min-h-screen">
     <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        const { motion } = window.FramerMotion || { motion: { div: ({ children }) => <div>{children}</div> } };
+
+        const {
+            Landmark, Users, Wheat, Fuel, Pickaxe, Calculator, Save, RefreshCcw, Flag,
+            RotateCcw, Plus, Trash2, CheckCircle, XCircle, Search, Database, Globe2,
+            ChevronRight,
+        } = lucide;
+
+        // ------------------------------------------------------------
+        // CONFIGURAÇÕES E CONSTANTES
+        // ------------------------------------------------------------
+        const firebaseConfig = {
+            apiKey: "AIzaSyBd-cQsmXqgU9wVDtxYdaeLFQIfIUxv6GE",
+            authDomain: "war-1954-1799c.firebaseapp.com",
+            projectId: "war-1954-1799c",
+            storageBucket: "war-1954-1799c.firebasestorage.app",
+            messagingSenderId: "147967902110",
+            appId: "1:147967902110:web:2e2a54b98ef9474d7a968f",
+            measurementId: "G-LQNDE985RB"
+        };
+        
+        // Inicializa o Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore.getFirestore(app);
+
+        const TUNING = {
+            level: { 1: 0.7, 2: 0.85, 3: 1.0, 4: 1.2, 5: 1.4 },
+            techFoodAlpha: 0.5,
+            techFuelAlpha: 0.4,
+            techMetalAlpha: 0.4,
+            baseFoodPerRuralCapita: 0.008,
+            foodConsumptionPerCapita: 0.007,
+            fuelSizeUnitToBbl: 1000,
+            metalSizeUnitToTon: 1000,
+            orcamentoPIBBase: 0.05,
+            orcamentoPIBEstabilidade: 0.005,
+            orcamentoPIBTecnologia: 0.0025,
+        };
+
+        const num = (v) => (Number.isFinite(+v) ? +v : 0);
+        const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+        const fmt = (n) => new Intl.NumberFormat("pt-BR").format(num(n));
+
+        const initialState = {
+            id: "",
+            name: "",
+            era: "1954",
+            flag: "🏳️",
+            pib: "",
+            populacao: "",
+            tec: "",
+            estabilidade: "",
+            burocracia: "",
+            urbanizacao: "",
+            fertilidadeSolo: 3,
+            pocoTamanho: "",
+            pocoNivel: 3,
+            minaTamanho: "",
+            teorMinerio: 3,
+            orcamento: "",
+            exercito: "",
+            veiculos: "",
+            marinha: "",
+            aeronautica: "",
+            gastos_fa: "",
+            em_guerra: 'NAO',
+            player_id: '',
+        };
+
+        // ============================================================
+        // COMPONENTE PRINCIPAL (App)
+        // ============================================================
+        function App() {
+            const [form, setForm] = useState(initialState);
+            const [status, setStatus] = useState({ message: "", type: "" });
+            const [isSaving, setIsSaving] = useState(false);
+            const [isDeleting, setIsDeleting] = useState(false);
+            const [isSearching, setIsSearching] = useState(false);
+            const [countries, setCountries] = useState([]);
+
+            useEffect(() => {
+                const countriesCollection = firebase.firestore.collection(db, "paises");
+                const unsubscribe = firebase.firestore.onSnapshot(countriesCollection, (snapshot) => {
+                    const countriesList = [];
+                    snapshot.forEach((doc) => {
+                        countriesList.push({ id: doc.id, ...doc.data() });
+                    });
+                    setCountries(countriesList);
+                });
+                return () => unsubscribe();
+            }, []);
+
+            const pibPerCapita = React.useMemo(() => {
+                const p = num(form.pib);
+                const pop = Math.max(1, num(form.populacao));
+                return p / pop;
+            }, [form.pib, form.populacao]);
+            
+            const popUrbana = React.useMemo(
+                () => Math.round(num(form.populacao) * clamp(num(form.urbanizacao) / 100, 0, 1)),
+                [form.populacao, form.urbanizacao]
+            );
+            const popRural = React.useMemo(
+                () => Math.max(0, num(form.populacao) - popUrbana),
+                [form.populacao, popUrbana]
+            );
+
+            const techMultFood = React.useMemo(
+                () => 1 + clamp(num(form.tec), 0, 100) * (TUNING.techFoodAlpha / 100),
+                [form.tec]
+            );
+            const techMultFuel = React.useMemo(
+                () => 1 + clamp(num(form.tec), 0, 100) * (TUNING.techFuelAlpha / 100),
+                [form.tec]
+            );
+            const techMultMetal = React.useMemo(
+                () => 1 + clamp(num(form.tec), 0, 100) * (TUNING.techMetalAlpha / 100),
+                [form.tec]
+            );
+
+            const levelMultFood = React.useMemo(
+                () => TUNING.level[clamp(num(form.fertilidadeSolo), 1, 5)],
+                [form.fertilidadeSolo]
+            );
+            const levelMultFuel = React.useMemo(
+                () => TUNING.level[clamp(num(form.pocoNivel), 1, 5)],
+                [form.pocoNivel]
+            );
+            const levelMultMetal = React.useMemo(
+                () => TUNING.level[clamp(num(form.teorMinerio), 1, 5)],
+                [form.teorMinerio]
+            );
+
+            const foodProd = React.useMemo(() => {
+                const base = popRural * TUNING.baseFoodPerRuralCapita;
+                return base * levelMultFood * techMultFood;
+            }, [popRural, levelMultFood, techMultFood]);
+
+            const foodCons = React.useMemo(
+                () => num(form.populacao) * TUNING.foodConsumptionPerCapita,
+                [form.populacao]
+            );
+            const foodSaldo = React.useMemo(() => foodProd - foodCons, [foodProd, foodCons]);
+
+            const fuelProd = React.useMemo(() => {
+                const sizeBbl = num(form.pocoTamanho) * TUNING.fuelSizeUnitToBbl;
+                return sizeBbl * levelMultFuel * techMultFuel;
+            }, [form.pocoTamanho, levelMultFuel, techMultFuel]);
+
+            const metalProd = React.useMemo(() => {
+                const sizeTon = num(form.minaTamanho) * TUNING.metalSizeUnitToTon;
+                return sizeTon * levelMultMetal * techMultMetal;
+            }, [form.minaTamanho, levelMultMetal, techMultMetal]);
+
+            const orcamentoCalculado = React.useMemo(() => {
+                const pibFloat = num(form.pib);
+                const estabilidadeFloat = num(form.estabilidade) / 100;
+                const tecnologiaFloat = num(form.tec) / 100;
+                const taxaOrcamento = TUNING.orcamentoPIBBase + (estabilidadeFloat * TUNING.orcamentoPIBEstabilidade) + (tecnologiaFloat * TUNING.orcamentoPIBTecnologia);
+                return pibFloat * taxaOrcamento;
+            }, [form.pib, form.estabilidade, form.tec]);
+
+            const patch = (k, v) => setForm((f) => ({ ...f, [k]: v }));
+            
+            const handleSearch = async () => {
+                if (!form.id) {
+                    setStatus({ message: "Por favor, insira o ID do país para buscar.", type: "error" });
+                    return;
+                }
+                setIsSearching(true);
+                setStatus({ message: "", type: "" });
+                try {
+                    const docRef = firebase.firestore.doc(db, "paises", form.id);
+                    const docSnap = await firebase.firestore.getDoc(docRef);
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+                        setForm({
+                            id: docSnap.id,
+                            name: data.name || '',
+                            era: data.era || '1954',
+                            flag: data.flag || '🏳️',
+                            pib: data.pib || '',
+                            populacao: data.populacao || '',
+                            tec: data.tecnologia || '',
+                            estabilidade: data.estabilidade || '',
+                            burocracia: data.burocracia || '',
+                            urbanizacao: data.urbanizacao || '',
+                            fertilidadeSolo: data.fertilidadeSolo || 3,
+                            pocoTamanho: data.pocoTamanho || '',
+                            pocoNivel: data.pocoNivel || 3,
+                            minaTamanho: data.minaTamanho || '',
+                            teorMinerio: data.teorMinerio || 3,
+                            orcamento: data.orcamento || '',
+                            exercito: data.exercito || '',
+                            veiculos: data.veiculos || '',
+                            marinha: data.marinha || '',
+                            aeronautica: data.aeronautica || '',
+                            gastos_fa: data.gastos_fa || '',
+                            em_guerra: data.em_guerra ? 'SIM' : 'NAO',
+                            player_id: data.player_id || '',
+                        });
+                        setStatus({ message: `País "${data.name}" (${docSnap.id}) carregado com sucesso.`, type: "success" });
+                    } else {
+                        setStatus({ message: `País com ID "${form.id}" não encontrado.`, type: "error" });
+                    }
+                } catch (e) {
+                    console.error("Erro ao buscar documento: ", e);
+                    setStatus({ message: "Erro ao buscar o país. Verifique o ID e a conexão.", type: "error" });
+                } finally {
+                    setIsSearching(false);
+                }
+            };
+
+            const handleSave = async (e) => {
+                e.preventDefault();
+                setIsSaving(true);
+                setStatus({ message: "", type: "" });
+
+                if (!form.id) {
+                    setStatus({ message: "O ID do país é obrigatório.", type: "error" });
+                    setIsSaving(false);
+                    return;
+                }
+
+                const dataToSave = {
+                    name: form.name,
+                    era: form.era,
+                    flag: form.flag,
+                    pib: num(form.pib),
+                    populacao: num(form.populacao),
+                    pib_per_capita: pibPerCapita,
+                    tecnologia: num(form.tec),
+                    estabilidade: num(form.estabilidade),
+                    burocracia: num(form.burocracia),
+                    urbanizacao: num(form.urbanizacao),
+                    fertilidadeSolo: num(form.fertilidadeSolo),
+                    pop_urbana: popUrbana,
+                    pop_rural: popRural,
+                    producao_comida: foodProd,
+                    consumo_comida: foodCons,
+                    saldo_comida: foodSaldo,
+                    pocoTamanho: num(form.pocoTamanho),
+                    pocoNivel: num(form.pocoNivel),
+                    producao_combustivel: fuelProd,
+                    minaTamanho: num(form.minaTamanho),
+                    teorMinerio: num(form.teorMinerio),
+                    producao_metal: metalProd,
+                    orcamento: orcamentoCalculado,
+                    exercito: num(form.exercito),
+                    veiculos: num(form.veiculos),
+                    marinha: num(form.marinha),
+                    aeronautica: num(form.aeronautica),
+                    gastos_fa: num(form.gastos_fa),
+                    em_guerra: form.em_guerra === "SIM",
+                    player_id: form.player_id || null,
+                    visibilidade: "publico",
+                };
+
+                try {
+                    const docRef = firebase.firestore.doc(db, "paises", form.id);
+                    await firebase.firestore.setDoc(docRef, dataToSave);
+                    setStatus({
+                        message: `País "${form.name}" (${form.id}) salvo com sucesso!`,
+                        type: "success",
+                    });
+                } catch (e) {
+                    console.error("Erro ao adicionar documento: ", e);
+                    setStatus({
+                        message: "Erro ao salvar o país. Verifique a conexão e permissões.",
+                        type: "error",
+                    });
+                } finally {
+                    setIsSaving(false);
+                }
+            };
+
+            const handleDelete = async () => {
+                if (!form.id) {
+                    setStatus({ message: "Selecione um país para deletar.", type: "error" });
+                    return;
+                }
+                setIsDeleting(true);
+                try {
+                    const docRef = firebase.firestore.doc(db, "paises", form.id);
+                    await firebase.firestore.deleteDoc(docRef);
+                    setStatus({
+                        message: `País "${form.id}" deletado com sucesso.`,
+                        type: "success",
+                    });
+                    setForm(initialState);
+                } catch (e) {
+                    console.error("Erro ao deletar documento: ", e);
+                    setStatus({ message: "Erro ao deletar o país.", type: "error" });
+                } finally {
+                    setIsDeleting(false);
+                }
+            };
+
+            // -------------------- UI helpers --------------------
+            function Field({ label, value, onChange, placeholder, className }) {
+                return (
+                    <label className={`text-sm ${className}`}>
+                        <div className="mb-1 text-slate-300">{label}</div>
+                        <input
+                            className="w-full rounded-xl bg-white/10 px-3 py-2 text-slate-100 border border-white/10 focus:outline-none focus:ring-2 focus:ring-amber-400/60"
+                            value={value}
+                            onChange={(e) => onChange(e.target.value)}
+                            placeholder={placeholder}
+                        />
+                    </label>
+                );
+            }
+
+            function NumberField({ label, value, onChange, className }) {
+                return (
+                    <label className={`text-sm ${className}`}>
+                        <div className="mb-1 text-slate-300">{label}</div>
+                        <input
+                            type="number"
+                            step="any"
+                            className="w-full rounded-xl bg-white/10 px-3 py-2 text-slate-100 border border-white/10 focus:outline-none focus:ring-2 focus:ring-amber-400/60"
+                            value={value}
+                            onChange={(e) => onChange(e.target.value)}
+                        />
+                    </label>
+                );
+            }
+
+            function ReadOnlyField({ label, value, className }) {
+                return (
+                    <div className={`text-sm rounded-xl bg-white/5 border border-white/10 p-3 ${className}`}>
+                        <div className="text-slate-300 mb-1">{label}</div>
+                        <div className="font-semibold">{value}</div>
+                    </div>
+                );
+            }
+
+            function SelectLevel({ label, value, onChange, className }) {
+                return (
+                    <label className={`text-sm ${className}`}>
+                        <div className="mb-1 text-slate-300">{label}</div>
+                        <select
+                            className="w-full rounded-xl bg-white/10 px-3 py-2 text-slate-100 border border-white/10 focus:outline-none focus:ring-2 focus:ring-amber-400/60"
+                            value={value}
+                            onChange={(e) => onChange(e.target.value)}
+                        >
+                            <option value={1}>1</option>
+                            <option value={2}>2</option>
+                            <option value={3}>3</option>
+                            <option value={4}>4</option>
+                            <option value={5}>5</option>
+                        </select>
+                    </label>
+                );
+            }
+
+            function SaldoBadge({ value, unit }) {
+                const ok = value >= 0;
+                return (
+                    <div className={`inline-flex items-center gap-2 rounded-xl px-3 py-1 text-sm ${ok ? 'bg-emerald-500/15 text-emerald-200' : 'bg-rose-500/15 text-rose-200'}`}>
+                        <i data-lucide="calculator" className="h-4 w-4" /> {ok ? 'Superávit' : 'Déficit'}: <b>{fmt(value.toFixed(3))}</b> {unit}
+                    </div>
+                );
+            }
+            
+            function CountriesList() {
+                return (
+                    <section className="mt-6 p-6 rounded-3xl border border-white/10 bg-white/5">
+                        <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+                            <i data-lucide="globe-2" className="h-5 w-5"></i>
+                            Países do Mundo
+                        </h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            {countries.length > 0 ? countries.map((c) => (
+                                <motion.div
+                                    key={c.id}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    whileInView={{ opacity: 1, y: 0 }}
+                                    viewport={{ once: true }}
+                                    transition={{ duration: 0.35 }}
+                                    className="rounded-2xl border border-white/10 bg-white/5 p-4 hover:bg-white/10"
+                                >
+                                    <div className="flex items-center justify-between">
+                                        <div className="text-2xl" title={c.name}>{c.flag}</div>
+                                        <span className="text-xs text-white/60">{c.id}</span>
+                                    </div>
+                                    <h3 className="mt-2 font-semibold tracking-tight text-lg">{c.name}</h3>
+                                    <dl className="mt-2 text-sm">
+                                        <dt className="text-gray-400">PIB</dt>
+                                        <dd className="font-medium">${" "}{c.pib?.toLocaleString("pt-BR")} mi</dd>
+                                        <dt className="text-gray-400 mt-2">População</dt>
+                                        <dd className="font-medium">{c.populacao?.toLocaleString("pt-BR")}</dd>
+                                        <dt className="text-gray-400 mt-2">Estabilidade</dt>
+                                        <dd className="font-medium">{c.estabilidade}/100</dd>
+                                    </dl>
+                                    <button
+                                        onClick={() => {
+                                            setForm(c);
+                                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                                        }}
+                                        className="mt-3 inline-flex items-center gap-2 text-amber-300 hover:text-amber-200"
+                                    >
+                                        Editar <i data-lucide="chevron-right" className="h-4 w-4" />
+                                    </button>
+                                </motion.div>
+                            )) : (
+                                <div className="col-span-full text-center text-gray-500 p-8">Nenhum país público encontrado. Adicione um!</div>
+                            )}
+                        </div>
+                    </section>
+                );
+            }
+            
+            return (
+                <div className="min-h-screen bg-slate-950 text-slate-100 p-6">
+                    <motion.div
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.35 }}
+                        className="mx-auto max-w-6xl space-y-6"
+                    >
+                        {/* HEADER */}
+                        <header className="flex items-center gap-3">
+                            <div className="h-11 w-11 rounded-2xl bg-gradient-to-br from-amber-400 to-rose-500 grid place-items-center shadow-lg shadow-rose-500/20">
+                                <i data-lucide="landmark" className="h-6 w-6 text-slate-900" />
+                            </div>
+                            <div>
+                                <h1 className="text-2xl font-bold tracking-tight">Narrador • Construtor de País</h1>
+                                <p className="text-sm text-slate-300">Preencha os dados brutos; o sistema calcula o resto.</p>
+                            </div>
+                        </header>
+
+                        {/* STATUS / MENSAGENS */}
+                        {status.message && (
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                className={`flex items-center gap-3 p-4 rounded-xl mb-6 ${
+                                    status.type === "success"
+                                        ? "bg-emerald-600/20 text-emerald-300"
+                                        : status.type === "info"
+                                            ? "bg-blue-600/20 text-blue-300"
+                                            : "bg-red-600/20 text-red-300"
+                                }`}
+                            >
+                                {status.type === "success" ? <i data-lucide="check-circle" className="h-5 w-5" /> : <i data-lucide="x-circle" className="h-5 w-5" />}
+                                <span>{status.message}</span>
+                            </motion.div>
+                        )}
+
+                        {/* IDENTIFICAÇÃO E AÇÃO */}
+                        <section className="rounded-3xl border border-white/10 bg-white/5 p-5">
+                            <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+                                <Field
+                                    label="ID (ex.: BRA)"
+                                    value={form.id}
+                                    onChange={(v) => patch("id", v.toUpperCase())}
+                                    placeholder="BRA"
+                                    className="md:col-span-1"
+                                />
+                                <Field
+                                    label="Nome do País"
+                                    value={form.name}
+                                    onChange={(v) => patch("name", v)}
+                                    placeholder="Brasil"
+                                    className="md:col-span-2"
+                                />
+                                <Field
+                                    label="Bandeira"
+                                    value={form.flag}
+                                    onChange={(v) => patch("flag", v)}
+                                    placeholder="🇧🇷"
+                                    className="md:col-span-1"
+                                />
+                                <div className="rounded-xl border border-white/10 p-3 flex items-center justify-center md:col-span-1">
+                                    <div className="text-4xl">{form.flag}</div>
+                                </div>
+                            </div>
+                            <div className="flex gap-4 mt-4">
+                                <button
+                                    type="button"
+                                    onClick={handleSearch}
+                                    disabled={isSearching || !form.id}
+                                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-500 hover:bg-blue-600 text-white font-semibold transition-colors px-6 py-3 disabled:bg-blue-500/50"
+                                >
+                                    {isSearching ? <i data-lucide="rotate-ccw" className="h-5 w-5 animate-spin" /> : <i data-lucide="search" className="h-5 w-5" />}
+                                    Buscar País
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setForm(initialState)}
+                                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-gray-700 hover:bg-gray-600 text-white font-semibold transition-colors px-6 py-3"
+                                >
+                                    <i data-lucide="plus" className="h-5 w-5" /> Novo País
+                                </button>
+                            </div>
+                        </section>
+
+                        {/* ECONOMIA / SOCIEDADE */}
+                        <section className="rounded-3xl border border-white/10 bg-white/5 p-5">
+                            <h2 className="font-semibold flex items-center gap-2 mb-3"><i data-lucide="users" className="h-4 w-4" /> Economia & Sociedade</h2>
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                                <NumberField label="PIB" value={form.pib} onChange={(v) => patch("pib", +v)} />
+                                <NumberField label="População" value={form.populacao} onChange={(v) => patch("populacao", +v)} />
+                                <ReadOnlyField label="PIB per Capita" value={`£ ${fmt(pibPerCapita.toFixed(2))}`} />
+                                <ReadOnlyField label="Pop. Rural" value={fmt(popRural)} />
+                                <NumberField label="Urbanização (%)" value={form.urbanizacao} onChange={(v) => patch("urbanizacao", clamp(+v, 0, 100))} />
+                                <ReadOnlyField label="Pop. Urbana" value={fmt(popUrbana)} />
+                                <NumberField label="Tec (0–100)" value={form.tec} onChange={(v) => patch("tec", clamp(+v, 0, 100))} />
+                                <NumberField label="Estabilidade (%)" value={form.estabilidade} onChange={(v) => patch("estabilidade", clamp(+v, 0, 100))} />
+                            </div>
+                            <div className="mt-4">
+                                <ReadOnlyField label="Orçamento Calculado" value={`£ ${fmt(orcamentoCalculado.toFixed(0))}`} />
+                            </div>
+                        </section>
+
+                        {/* COMIDA */}
+                        <section className="rounded-3xl border border-white/10 bg-white/5 p-5">
+                            <h2 className="font-semibold flex items-center gap-2 mb-3"><i data-lucide="wheat" className="h-4 w-4" /> Produção de Comida</h2>
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                                <SelectLevel label="Fertilidade do Solo (1–5)" value={form.fertilidadeSolo} onChange={(v) => patch("fertilidadeSolo", +v)} />
+                                <ReadOnlyField label="Produção (t/turno)" value={fmt(foodProd.toFixed(3))} />
+                                <ReadOnlyField label="Consumo (t/turno)" value={fmt(foodCons.toFixed(3))} />
+                                <ReadOnlyField label="Saldo (t/turno)" value={fmt(foodSaldo.toFixed(3))} />
+                            </div>
+                            <SaldoBadge value={foodSaldo} unit="t/turno" />
+                        </section>
+
+                        {/* COMBUSTÍVEL */}
+                        <section className="rounded-3xl border border-white/10 bg-white/5 p-5">
+                            <h2 className="font-semibold flex items-center gap-2 mb-3"><i data-lucide="fuel" className="h-4 w-4" /> Produção de Combustível</h2>
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                                <NumberField label="Tamanho do Poço (size)" value={form.pocoTamanho} onChange={(v) => patch("pocoTamanho", +v)} />
+                                <SelectLevel label="Nível do Poço (1–5)" value={form.pocoNivel} onChange={(v) => patch("pocoNivel", +v)} />
+                                <ReadOnlyField label="Produção (bbl/turno)" value={fmt(fuelProd.toFixed(0))} />
+                                <ReadOnlyField label="Multiplicador (Tec.)" value={`× ${techMultFuel.toFixed(2)}`} />
+                            </div>
+                        </section>
+
+                        {/* METAL */}
+                        <section className="rounded-3xl border border-white/10 bg-white/5 p-5">
+                            <h2 className="font-semibold flex items-center gap-2 mb-3"><i data-lucide="pickaxe" className="h-4 w-4" /> Produção de Metal</h2>
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                                <NumberField label="Tamanho da Mina (size)" value={form.minaTamanho} onChange={(v) => patch("minaTamanho", +v)} />
+                                <SelectLevel label="Teor do Minério (1–5)" value={form.teorMinerio} onChange={(v) => patch("teorMinerio", +v)} />
+                                <ReadOnlyField label="Produção (t/turno)" value={fmt(metalProd.toFixed(0))} />
+                                <ReadOnlyField label="Multiplicador (Tec.)" value={`× ${techMultMetal.toFixed(2)}`} />
+                            </div>
+                        </section>
+
+                        {/* AÇÕES */}
+                        <div className="flex flex-wrap gap-3 mt-6">
+                            <button
+                                type="button"
+                                onClick={handleSave}
+                                disabled={isSaving}
+                                className="inline-flex items-center gap-2 rounded-xl bg-amber-400 text-slate-900 px-4 py-2 font-semibold disabled:bg-amber-400/50"
+                            >
+                                {isSaving ? <i data-lucide="rotate-ccw" className="h-4 w-4 animate-spin" /> : <i data-lucide="save" className="h-4 w-4" />}
+                                {isSaving ? 'Salvando...' : 'Salvar País no Firebase'}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleDelete}
+                                disabled={isDeleting || !form.id}
+                                className="inline-flex items-center gap-2 rounded-xl bg-red-500 text-white px-4 py-2 font-semibold disabled:bg-red-500/50"
+                            >
+                                {isDeleting ? <i data-lucide="rotate-ccw" className="h-4 w-4 animate-spin" /> : <i data-lucide="trash-2" className="h-4 w-4" />}
+                                Deletar País
+                            </button>
+                        </div>
+                    </motion.div>
+                </div>
+            );
+        }
+
+        function CountriesList() {
+            const [countries, setCountries] = useState([]);
+            useEffect(() => {
+                const countriesCollection = collection(db, "paises");
+                const unsubscribe = onSnapshot(countriesCollection, (snapshot) => {
+                    const countriesList = [];
+                    snapshot.forEach((doc) => {
+                        countriesList.push({ id: doc.id, ...doc.data() });
+                    });
+                    setCountries(countriesList);
+                });
+                return () => unsubscribe();
+            }, []);
+
+            return (
+                <section className="mt-6 p-6 rounded-3xl border border-white/10 bg-white/5">
+                    <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+                        <i data-lucide="globe-2" className="h-5 w-5"></i>
+                        Países do Mundo
+                    </h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        {countries.length > 0 ? countries.map((c) => (
+                            <motion.div
+                                key={c.id}
+                                initial={{ opacity: 0, y: 10 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ duration: 0.35 }}
+                                className="rounded-2xl border border-white/10 bg-white/5 p-4 hover:bg-white/10"
+                            >
+                                <div className="flex items-center justify-between">
+                                    <div className="text-2xl" title={c.name}>{c.flag}</div>
+                                    <span className="text-xs text-white/60">{c.id}</span>
+                                </div>
+                                <h3 className="mt-2 font-semibold tracking-tight text-lg">{c.name}</h3>
+                                <dl className="mt-2 text-sm">
+                                    <dt className="text-gray-400">PIB</dt>
+                                    <dd className="font-medium">${" "}{c.pib?.toLocaleString("pt-BR")} mi</dd>
+                                    <dt className="text-gray-400 mt-2">População</dt>
+                                    <dd className="font-medium">{c.populacao?.toLocaleString("pt-BR")}</dd>
+                                    <dt className="text-gray-400 mt-2">Estabilidade</dt>
+                                    <dd className="font-medium">{c.estabilidade}/100</dd>
+                                </dl>
+                                <button
+                                    onClick={() => alert('Edição em breve!')}
+                                    className="mt-3 inline-flex items-center gap-2 text-amber-300 hover:text-amber-200"
+                                >
+                                    Editar <i data-lucide="chevron-right" className="h-4 w-4" />
+                                </button>
+                            </motion.div>
+                        )) : (
+                            <div className="col-span-full text-center text-gray-500 p-8">Nenhum país público encontrado. Adicione um!</div>
+                        )}
+                    </div>
+                </section>
+            );
+        }
+
+        // -------------------- UI helpers --------------------
+        function Field({ label, value, onChange, placeholder, className }) {
+            return (
+                <label className={`text-sm ${className}`}>
+                    <div className="mb-1 text-slate-300">{label}</div>
+                    <input
+                        className="w-full rounded-xl bg-white/10 px-3 py-2 text-slate-100 border border-white/10 focus:outline-none focus:ring-2 focus:ring-amber-400/60"
+                        value={value}
+                        onChange={(e) => onChange(e.target.value)}
+                        placeholder={placeholder}
+                    />
+                </label>
+            );
+        }
+
+        function NumberField({ label, value, onChange, className }) {
+            return (
+                <label className={`text-sm ${className}`}>
+                    <div className="mb-1 text-slate-300">{label}</div>
+                    <input
+                        type="number"
+                        step="any"
+                        className="w-full rounded-xl bg-white/10 px-3 py-2 text-slate-100 border border-white/10 focus:outline-none focus:ring-2 focus:ring-amber-400/60"
+                        value={value}
+                        onChange={(e) => onChange(e.target.value)}
+                    />
+                </label>
+            );
+        }
+
+        function ReadOnlyField({ label, value, className }) {
+            return (
+                <div className={`text-sm rounded-xl bg-white/5 border border-white/10 p-3 ${className}`}>
+                    <div className="text-slate-300 mb-1">{label}</div>
+                    <div className="font-semibold">{value}</div>
+                </div>
+            );
+        }
+
+        function SelectLevel({ label, value, onChange, className }) {
+            return (
+                <label className={`text-sm ${className}`}>
+                    <div className="mb-1 text-slate-300">{label}</div>
+                    <select
+                        className="w-full rounded-xl bg-white/10 px-3 py-2 text-slate-100 border border-white/10 focus:outline-none focus:ring-2 focus:ring-amber-400/60"
+                        value={value}
+                        onChange={(e) => onChange(e.target.value)}
+                    >
+                        <option value={1}>1</option>
+                        <option value={2}>2</option>
+                        <option value={3}>3</option>
+                        <option value={4}>4</option>
+                        <option value={5}>5</option>
+                    </select>
+                </label>
+            );
+        }
+
+        function SaldoBadge({ value, unit }) {
+            const ok = value >= 0;
+            return (
+                <div className={`inline-flex items-center gap-2 rounded-xl px-3 py-1 text-sm ${ok ? 'bg-emerald-500/15 text-emerald-200' : 'bg-rose-500/15 text-rose-200'}`}>
+                    <i data-lucide="calculator" className="h-4 w-4" /> {ok ? 'Superávit' : 'Déficit'}: <b>{fmt(value.toFixed(3))}</b> {unit}
+                </div>
+            );
+        }
+
+        ReactDOM.createRoot(document.getElementById('root')).render(
+            <React.StrictMode>
+                <App />
+                <CountriesList />
+            </React.StrictMode>
+        );
+    </script>
 </body>
 </html>
-*/
-
-// ============================================================
-// ARQUIVO: src/index.js
-// ------------------------------------------------------------
-// Este arquivo renderiza o componente principal 'App' no DOM.
-// ============================================================
-/*
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import App from './App.jsx';
-import './index.css';
-
-ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);
-*/
-
-// ============================================================
-// ARQUIVO: src/index.css
-// ------------------------------------------------------------
-// Arquivo CSS global, usado principalmente pelo Tailwind.
-// ============================================================
-/*
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-body {
-  font-family: 'Inter', sans-serif;
-  @apply bg-slate-950 text-slate-100;
-}
-*/
-
-// ============================================================
-// ARQUIVO: src/App.jsx
-// ------------------------------------------------------------
-// Componente principal da aplicação.
-// ============================================================
-import React, { useState } from "react";
-import { motion } from "framer-motion";
-import {
-  Globe2,
-  Users,
-  History,
-  TrendingUp,
-  Shield,
-  Flag,
-  LogIn,
-  ChevronRight,
-  Dice5,
-  Settings,
-  Map,
-  X,
-  RotateCcw,
-  Plus,
-  Search,
-} from "lucide-react";
-// Importações do Firebase - descomente e configure para usar
-// import { initializeApp } from 'firebase/app';
-// import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signInAnonymously } from 'firebase/auth';
-// import { getFirestore, collection, onSnapshot, query } from 'firebase/firestore';
-
-const sampleEra = "1954";
-const sampleTurn = 12;
-
-const samplePublicCountries = [
-  { id: "USA", name: "Estados Unidos", pib: 523.2, estabilidade: 84, flag: "🇺🇸" },
-  { id: "BRA", name: "Brasil", pib: 76.1, estabilidade: 72, flag: "🇧🇷" },
-  { id: "FRA", name: "França", pib: 143.7, estabilidade: 81, flag: "🇫🇷" },
-  { id: "JPN", name: "Japão", pib: 98.3, estabilidade: 77, flag: "🇯🇵" },
-];
-
-const sampleTurnPosts = [
-  {
-    turn: 12,
-    title: "Turno 12 — Relatório Público",
-    url: "#",
-    summary:
-      "Resumo das ações e resultados narrados no grupo do Facebook. Clique para abrir o post oficial.",
-  },
-  {
-    turn: 11,
-    title: "Turno 11 — Relatório Público",
-    url: "#",
-    summary: "Resultados do turno 11 (link para o Facebook).",
-  },
-];
-
-const fmt = (n) => new Intl.NumberFormat("pt-BR", { style: 'decimal', minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(n);
-
-export default function App() {
-  const [logged, setLogged] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [userCountry] = useState({ id: "BRA", name: "Brasil" });
-  const [loginModalOpen, setLoginModalOpen] = useState(false);
-  const [publicCountries, setPublicCountries] = useState(samplePublicCountries);
-  const [turnPosts, setTurnPosts] = useState(sampleTurnPosts);
-
-  const handleLogin = (email, password) => {
-    // Lógica de login com Firebase Auth viria aqui
-    // signInWithEmailAndPassword(auth, email, password)
-    //   .then((userCredential) => {
-    //     setLogged(true);
-    //     // Lógica para definir se é admin ou não
-    //   })
-    //   .catch((error) => {
-    //     console.error("Login failed", error);
-    //   });
-    console.log(`Tentativa de login com email: ${email} e senha: ${password}`);
-    if (email === "narrador@rpg.com") {
-      setIsAdmin(true);
-    }
-    setLogged(true);
-    setLoginModalOpen(false);
-  };
-
-  const handleLogout = () => {
-    setLogged(false);
-    setIsAdmin(false);
-    // Lógica de logout do Firebase Auth viria aqui
-    // auth.signOut();
-  };
-
-  return (
-    <div className="min-h-screen w-full bg-gradient-to-b from-slate-950 via-slate-900 to-slate-900 text-slate-100">
-      {loginModalOpen && (
-        <LoginModal
-          onClose={() => setLoginModalOpen(false)}
-          onLogin={handleLogin}
-        />
-      )}
-      
-      <Navbar logged={logged} isAdmin={isAdmin} onLogin={() => setLoginModalOpen(true)} onLogout={handleLogout} />
-      
-      <Hero />
-      
-      <main className="mx-auto max-w-7xl px-4 py-6">
-        <PlayerAndNarratorPanel logged={logged} isAdmin={isAdmin} userCountry={userCountry} />
-        <PublicCountriesPanel countries={publicCountries} />
-        <TurnFeedPanel posts={turnPosts} />
-      </main>
-
-      <Footer />
-    </div>
-  );
-}
-
-// ============================================================
-// MÓDULOS (Componentes)
-// ============================================================
-// Estes componentes podem ser movidos para uma pasta `src/components/`
-// para uma organização ainda melhor.
-// ============================================================
-
-function LoginModal({ onClose, onLogin }) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onLogin(email, password);
-  };
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <motion.div
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.9, opacity: 0 }}
-        className="bg-slate-800 rounded-3xl p-8 shadow-2xl max-w-sm w-full mx-4 border border-white/10"
-      >
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-xl font-bold text-white">Entrar</h3>
-          <button onClick={onClose} className="p-2 -mr-2 rounded-full hover:bg-white/10 transition">
-            <X className="h-6 w-6 text-slate-400 hover:text-white" />
-          </button>
-        </div>
-        <form onSubmit={handleSubmit}>
-          <input
-            type="email"
-            placeholder="E-mail"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full p-3 rounded-xl bg-slate-700 text-white mb-3 border border-white/10 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <input
-            type="password"
-            placeholder="Senha"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full p-3 rounded-xl bg-slate-700 text-white mb-3 border border-white/10 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <button
-            type="submit"
-            className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 rounded-xl transition duration-300 transform hover:scale-[1.01]"
-          >
-            Entrar
-          </button>
-        </form>
-      </motion.div>
-    </div>
-  );
-}
-
-function Navbar({ logged, isAdmin, onLogin, onLogout }) {
-  return (
-    <nav className="sticky top-0 z-30 backdrop-blur supports-[backdrop-filter]:bg-slate-900/50 bg-slate-900/60 border-b border-white/10">
-      <div className="mx-auto max-w-7xl px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-amber-400 to-rose-500 grid place-items-center shadow-lg shadow-rose-500/20">
-            <Dice5 className="h-5 w-5 text-slate-900" />
-          </div>
-          <div className="leading-tight">
-            <p className="text-lg font-semibold tracking-tight">WAR • Era {sampleEra}</p>
-            <p className="text-xs text-slate-300">RPG de Países — Portal Oficial</p>
-          </div>
-        </div>
-
-        <div className="hidden md:flex items-center gap-6 text-sm">
-          <a className="hover:text-white/90 text-slate-300" href="#paises">Países</a>
-          <a className="hover:text-white/90 text-slate-300" href="#turnos">Turnos</a>
-          {isAdmin && <a className="hover:text-white/90 text-slate-300" href="#narrador">Narrador</a>}
-        </div>
-
-        <div className="flex items-center gap-2">
-          {logged ? (
-            <button
-              onClick={onLogout}
-              className="inline-flex items-center gap-2 rounded-xl bg-emerald-500/90 hover:bg-emerald-500 px-3 py-2 text-sm font-semibold shadow ring-1 ring-white/10"
-            >
-              <Flag className="h-4 w-4" /> Meu país
-            </button>
-          ) : (
-            <button
-              onClick={onLogin}
-              className="inline-flex items-center gap-2 rounded-xl bg-white/10 hover:bg-white/15 px-3 py-2 text-sm font-semibold shadow ring-1 ring-white/10"
-            >
-              <LogIn className="h-4 w-4" /> Entrar
-            </button>
-          )}
-        </div>
-      </div>
-    </nav>
-  );
-}
-
-function Hero() {
-  const [logged, setLogged] = useState(false);
-  const [loginModalOpen, setLoginModalOpen] = useState(false);
-  const onLogin = () => setLoginModalOpen(true);
-  const onClose = () => setLoginModalOpen(false);
-
-  return (
-    <header className="relative mx-auto max-w-7xl px-4 pt-10 pb-8">
-      {loginModalOpen && <LoginModal onClose={onClose} onLogin={() => {setLogged(true); onClose();}} />}
-      <div className="absolute inset-0 -z-10 overflow-hidden">
-        <div className="mx-auto h-64 w-[90%] rounded-[2.5rem] bg-gradient-to-r from-rose-500/25 via-amber-400/20 to-emerald-400/20 blur-3xl" />
-      </div>
-
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-center"
-      >
-        <div>
-          <h1 className="text-3xl md:text-5xl font-bold tracking-tight">
-            Seu país. Suas estratégias. <span className="text-amber-400">Um mundo dinâmico.</span>
-          </h1>
-          <p className="mt-3 text-slate-300 max-w-prose">
-            Portal integrado para o RPG de países. Acompanhe status do seu país, histórico por turno,
-            tratados e painéis públicos. A narração e as imagens continuam no Facebook — aqui você
-            controla seus números.
-          </p>
-          <div className="mt-5 flex flex-wrap gap-3">
-            <button
-              onClick={() => (logged ? alert("Abrir painel do jogador") : onLogin())}
-              className="inline-flex items-center gap-2 rounded-2xl bg-amber-400 text-slate-900 hover:bg-amber-300 px-4 py-2.5 font-semibold shadow"
-            >
-              {logged ? <Flag className="h-4 w-4" /> : <LogIn className="h-4 w-4" />} {logged ? "Painel do meu país" : "Entrar e acessar"}
-            </button>
-            <a
-              href="#turnos"
-              className="inline-flex items-center gap-2 rounded-2xl bg-white/10 hover:bg-white/15 px-4 py-2.5 font-semibold ring-1 ring-white/10"
-            >
-              <History className="h-4 w-4" /> Ver turnos (Facebook) <ChevronRight className="h-4 w-4" />
-            </a>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-3 gap-3">
-          <StatCard icon={<Globe2 className="h-5 w-5" />} label="Era" value={sampleEra} subtle="Histórico" />
-          <StatCard icon={<History className="h-5 w-5" />} label="Turno aberto" value={`#${sampleTurn}`} subtle="1/semana" />
-          <StatCard icon={<Users className="h-5 w-5" />} label="Players" value="16" subtle="ativos" />
-          <StatCard icon={<TrendingUp className="h-5 w-5" />} label="PIB médio" value="+1,7%" subtle="no último turno" />
-          <StatCard icon={<Shield className="h-5 w-5" />} label="Estabilidade" value="78/100" subtle="média" />
-          <StatCard icon={<Map className="h-5 w-5" />} label="Países" value={`${samplePublicCountries.length}`} subtle="públicos" />
-        </div>
-      </motion.div>
-    </header>
-  );
-}
-
-function PlayerAndNarratorPanel({ logged, isAdmin, userCountry }) {
-  return (
-    <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.4 }}
-        className="lg:col-span-2 rounded-3xl border border-white/10 bg-gradient-to-b from-white/5 to-white/0 p-5"
-      >
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Prévia do Painel do Jogador</h2>
-          {logged && (
-            <span className="text-xs text-emerald-300/90">Conectado como: {userCountry.name}</span>
-          )}
-        </div>
-        <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-          <MiniMetric title="PIB" value={`$ ${fmt(83826)}`} trend="+2,1%" />
-          <MiniMetric title="Estabilidade" value="72/100" trend="-1" />
-          <MiniMetric title="Combustível" value="14.200" trend="+300" />
-        </div>
-        <div className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="rounded-2xl border border-white/10 p-4">
-            <h3 className="font-medium">Histórico recente</h3>
-            <ul className="mt-3 space-y-2 text-sm text-slate-300">
-              <li>Turno 12: +2,1% PIB, -1 Estab. — <a className="underline/30 hover:underline" href="#">ver post</a></li>
-              <li>Turno 11: +1,3% PIB — <a className="underline/30 hover:underline" href="#">ver post</a></li>
-              <li>Turno 10: +0,5% PIB — <a className="underline/30 hover:underline" href="#">ver post</a></li>
-            </ul>
-          </div>
-          <div className="rounded-2xl border border-white/10 p-4">
-            <h3 className="font-medium">Ações do país</h3>
-            <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
-              <button className="rounded-xl bg-white/10 hover:bg-white/15 py-2 font-semibold">Produção</button>
-              <button className="rounded-xl bg-white/10 hover:bg-white/15 py-2 font-semibold">Mercado</button>
-              <button className="rounded-xl bg-white/10 hover:bg-white/15 py-2 font-semibold">Tratados</button>
-              <button className="rounded-xl bg-white/10 hover:bg-white/15 py-2 font-semibold">Design (equip.)</button>
-            </div>
-          </div>
-        </div>
-      </motion.div>
-
-      {logged && isAdmin && (
-        <motion.aside
-          initial={{ opacity: 0, y: 12 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.45 }}
-          id="narrador"
-          className="rounded-3xl border border-white/10 bg-white/5 p-5"
-        >
-          <div className="flex items-center gap-2">
-            <Settings className="h-5 w-5" />
-            <h2 className="text-lg font-semibold">Ferramentas do Narrador</h2>
-          </div>
-          <p className="mt-2 text-sm text-slate-300">
-            Acessar o painel completo de gerenciamento para editar países e dados.
-          </p>
-          <div className="mt-4 grid grid-cols-1 gap-2 text-sm">
-            <button onClick={() => alert("Abrir painel de edição completo")} className="rounded-xl bg-amber-400/90 hover:bg-amber-400 text-slate-900 font-semibold py-2">Abrir painel de edição</button>
-            <button onClick={() => alert("Gerenciar contas de jogadores")} className="rounded-xl bg-white/10 hover:bg-white/15 py-2 font-semibold">Gerenciar contas de jogadores</button>
-          </div>
-        </motion.aside>
-      )}
-    </section>
-  );
-}
-
-function PublicCountriesPanel({ countries }) {
-  return (
-    <section id="paises" className="py-8">
-      <div className="flex items-center gap-2 mb-4">
-        <Globe2 className="h-5 w-5" />
-        <h2 className="text-lg font-semibold">Países (público)</h2>
-      </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {countries.map((c) => (
-          <motion.div
-            key={c.id}
-            initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.35 }}
-            className="rounded-2xl border border-white/10 bg-white/5 p-4 hover:bg-white/10"
-          >
-            <div className="flex items-center justify-between">
-              <div className="text-2xl" title={c.name}>{c.flag}</div>
-              <span className="text-xs text-white/60">{c.id}</span>
-            </div>
-            <h3 className="mt-2 font-semibold tracking-tight">{c.name}</h3>
-            <dl className="mt-2 grid grid-cols-2 gap-2 text-sm">
-              <div>
-                <dt className="text-slate-400">PIB</dt>
-                <dd className="font-medium">${" "}{c.pib.toLocaleString("pt-BR")} bi</dd>
-              </div>
-              <div>
-                <dt className="text-slate-400">Estabilidade</dt>
-                <dd className="font-medium">{c.estabilidade}/100</dd>
-              </div>
-            </dl>
-            <button
-              onClick={() => alert(`Abrir perfil público de ${c.name}`)}
-              className="mt-3 inline-flex items-center gap-2 text-amber-300 hover:text-amber-200"
-            >
-              Ver perfil <ChevronRight className="h-4 w-4" />
-            </button>
-          </motion.div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function TurnFeedPanel({ posts }) {
-  return (
-    <section id="turnos" className="pb-10">
-      <div className="flex items-center gap-2 mb-4">
-        <History className="h-5 w-5" />
-        <h2 className="text-lg font-semibold">Turnos — Relatórios públicos (Facebook)</h2>
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {posts.map((t, idx) => (
-          <motion.article
-            key={idx}
-            initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.35 }}
-            className="rounded-2xl border border-white/10 bg-white/5 p-4"
-          >
-            <h3 className="font-semibold tracking-tight">{t.title}</h3>
-            <p className="mt-1 text-sm text-slate-300">{t.summary}</p>
-            <a
-              href={t.url}
-              className="mt-3 inline-flex items-center gap-2 rounded-xl bg-white/10 hover:bg-white/15 px-3 py-2 text-sm font-semibold"
-            >
-              Abrir no Facebook <ChevronRight className="h-4 w-4" />
-            </a>
-          </motion.article>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function Footer() {
-  return (
-    <footer className="border-t border-white/10">
-      <div className="mx-auto max-w-7xl px-4 py-6 text-sm text-slate-400 flex flex-col sm:flex-row items-center justify-between gap-2">
-        <p>© {new Date().getFullYear()} WAR RPG — Era {sampleEra}</p>
-        <div className="flex items-center gap-4">
-          <a className="hover:text-slate-200" href="#regras">Regras</a>
-          <a className="hover:text-slate-200" href="#">Política</a>
-          <a className="hover:text-slate-200" href="#">Contato</a>
-        </div>
-      </div>
-    </footer>
-  );
-}
-
-function StatCard({ icon, label, value, subtle }) {
-  return (
-    <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-      <div className="flex items-center justify-between">
-        <div className="text-slate-300 text-xs">{label}</div>
-        <div className="text-slate-200">{icon}</div>
-      </div>
-      <div className="mt-1 text-2xl font-bold tracking-tight">{value}</div>
-      <div className="text-xs text-slate-400">{subtle}</div>
-    </div>
-  );
-}
-
-function MiniMetric({ title, value, trend }) {
-  const negative = typeof trend === "string" && trend.trim().startsWith("-");
-  return (
-    <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-      <div className="text-xs text-slate-400">{title}</div>
-      <div className="mt-1 text-xl font-semibold">{value}</div>
-      <div className={`text-xs ${negative ? "text-rose-300" : "text-emerald-300"}`}>{trend}</div>
-    </div>
-  );
-}
