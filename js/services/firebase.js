@@ -28,7 +28,96 @@ try {
     showNotification('error', 'Erro ao conectar com Firebase. Recarregue a página.');
 }
 
-export { app, auth, db };
+// Adiciona o provedor Google e exporta
+const googleProvider = new firebase.auth.GoogleAuthProvider();
+googleProvider.addScope('profile');
+googleProvider.addScope('email');
+
+export { app, auth, db, googleProvider };
+
+/**
+ * Função para login com Google.
+ * @returns {Promise<object>} Um objeto com o status da operação.
+ */
+export async function signInWithGoogle() {
+    try {
+        const result = await auth.signInWithPopup(googleProvider);
+        const user = result.user;
+        
+        // Salvar/atualizar dados do usuário no Firestore
+        await db.collection('usuarios').doc(user.uid).set({
+            nome: user.displayName,
+            email: user.email,
+            photoURL: user.photoURL,
+            papel: 'jogador', // padrão
+            dataIngresso: firebase.firestore.Timestamp.now(),
+            ultimoLogin: firebase.firestore.Timestamp.now(),
+            ativo: true
+        }, { merge: true });
+        
+        return { success: true, user };
+    } catch (error) {
+        console.error('Erro no login com Google:', error);
+        return { success: false, error };
+    }
+}
+
+/**
+ * Função para registro com email/senha.
+ * @param {string} email
+ * @param {string} password
+ * @param {string} displayName
+ * @returns {Promise<object>} Um objeto com o status da operação.
+ */
+export async function registerWithEmailPassword(email, password, displayName) {
+    try {
+        const result = await auth.createUserWithEmailAndPassword(email, password);
+        const user = result.user;
+        
+        // Atualizar perfil com nome
+        await user.updateProfile({
+            displayName: displayName
+        });
+        
+        // Salvar no Firestore
+        await db.collection('usuarios').doc(user.uid).set({
+            nome: displayName,
+            email: email,
+            papel: 'jogador',
+            dataIngresso: firebase.firestore.Timestamp.now(),
+            ultimoLogin: firebase.firestore.Timestamp.now(),
+            ativo: true
+        });
+        
+        return { success: true, user };
+    } catch (error) {
+        console.error('Erro no registro:', error);
+        throw error;
+    }
+}
+
+/**
+ * Função para login com email/senha.
+ * @param {string} email
+ * @param {string} password
+ * @returns {Promise<object>} Um objeto com o status da operação.
+ */
+export async function signInWithEmailPassword(email, password) {
+    try {
+        const result = await auth.signInWithEmailAndPassword(email, password);
+        
+        // Atualizar último login
+        await db.collection('usuarios').doc(result.user.uid).update({
+            ultimoLogin: firebase.firestore.Timestamp.now()
+        });
+        
+        return { success: true, user: result.user };
+    } catch (error) {
+        console.error('Erro no login:', error);
+        throw error;
+    }
+}
+
 
 // Função para vincular jogador ao país no Firestore
 export async function vincularJogadorAoPais(userId, paisId) {
@@ -67,20 +156,6 @@ export async function checkUserPermissions(userId) {
     } catch (error) {
         console.error('Erro ao verificar permissões:', error);
         return { isNarrator: false, isAdmin: false };
-    }
-}
-
-// Função para verificar se usuário tem país
-export async function checkPlayerCountry(userId) {
-    try {
-        const userDoc = await db.collection('usuarios').doc(userId).get();
-        if (userDoc.exists && userDoc.data().paisId) {
-            return userDoc.data().paisId;
-        }
-        return null;
-    } catch (error) {
-        console.error('Erro ao verificar país do jogador:', error);
-        return null;
     }
 }
 
