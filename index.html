@@ -292,7 +292,7 @@
             <div class="flex items-center justify-between mb-2">
               <div class="text-sm text-slate-400 group-hover:text-slate-300 transition">Players</div>
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400 group-hover:text-blue-400 transition" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
             </div>
             <div class="text-2xl font-extrabold text-blue-400" id="total-players">16</div>
@@ -399,29 +399,7 @@
     </div>
 
     <div class="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" id="lista-paises-publicos">
-      <!-- Cards de exemplo -->
-      <div class="rounded-2xl bg-bg-soft border border-bg-ring/70 p-4 hover:border-slate-500/60 hover:bg-white/[0.04] transition-all cursor-pointer">
-        <div class="flex items-center justify-between mb-3">
-          <div class="text-sm text-slate-400">#01</div>
-          <div class="flex items-center gap-2">
-            <div class="text-xs rounded-md px-2 py-0.5 border border-emerald-600/30 text-emerald-300/90 bg-emerald-500/10">70/100</div>
-            <div class="text-xs px-2 py-0.5 rounded-md bg-blue-500/10 text-blue-400 border border-blue-500/20">👤 Ativo</div>
-          </div>
-        </div>
-        <div class="mb-3">
-          <div class="font-semibold text-lg">Afeganistão</div>
-          <div class="text-sm text-slate-400 mt-1">PIB: US$ 523.704.480 • Pop: 8.728.408</div>
-        </div>
-        <div class="flex items-center justify-between text-xs">
-          <div class="text-slate-500">Estabilidade</div>
-          <div class="flex items-center gap-1">
-            <div class="w-16 h-1 bg-slate-700 rounded-full overflow-hidden">
-              <div class="h-full bg-emerald-400 transition-all duration-500" style="width: 35%"></div>
-            </div>
-            <span class="text-slate-400 ml-1">35%</span>
-          </div>
-        </div>
-      </div>
+      <!-- Cards serão gerados aqui pelo JS -->
     </div>
   </section>
 
@@ -462,6 +440,21 @@
     </div>
   </div>
 
+  <!-- Detailed Country Panel (Modal) -->
+  <div id="country-panel-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xl hidden opacity-0 transition-opacity duration-300">
+    <div class="relative w-full max-w-4xl max-h-[90vh] rounded-2xl border border-slate-800/80 bg-gradient-to-b from-slate-900/70 to-slate-950/70 p-6 backdrop-blur-xl shadow-xl overflow-y-auto transform -translate-y-2 transition-transform duration-300">
+      <button id="close-country-panel" class="absolute top-4 right-4 text-slate-400 hover:text-slate-200 transition">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 6L6 18M6 6l12 12"></path>
+        </svg>
+      </button>
+
+      <div id="country-panel-content">
+        <!-- Content will be injected here by JavaScript -->
+      </div>
+    </div>
+  </div>
+
   <!-- Footer -->
   <footer class="border-t border-bg-ring/70 bg-bg-soft/50">
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
@@ -487,73 +480,9 @@
     </div>
   </footer>
 
-  <script>
-    // Simulação básica para demonstração visual
-    document.getElementById('main-login-btn').addEventListener('click', () => {
-      document.getElementById('login-modal').classList.remove('hidden');
-    });
-
-    document.getElementById('auth-button').addEventListener('click', () => {
-      document.getElementById('login-modal').classList.remove('hidden');
-    });
-
-    document.getElementById('close-modal').addEventListener('click', () => {
-      document.getElementById('login-modal').classList.add('hidden');
-    });
-
-    // Simular login para mostrar painel do jogador
-    document.getElementById('login-form').addEventListener('submit', (e) => {
-      e.preventDefault();
-      document.getElementById('login-modal').classList.add('hidden');
-      document.getElementById('player-panel').style.display = 'block';
-      document.getElementById('narrator-tools').style.display = 'block';
-      document.getElementById('auth-button').querySelector('.btn-text').textContent = 'Sair';
-    });
-  </script>
-  <script type="module">
-  import { renderPublicCountries, updateKPIs } from "./js/painel-publico.js";
-
-  // EXEMPLO: troque este array pelos seus países (ou faça fetch/Firestore)
-  const countries = [
-    {
-      Pais: "Afeganistão",
-      // Pode ser emoji (🇦🇫) ou URL de imagem (BandeiraURL). Se tiver ambos, use qualquer um.
-      Bandeira: "🇦🇫",
-      // Aceita número ou string em pt-BR (ex.: "US$ 523.704.480")
-      PIB: 523704480,
-      Populacao: 8728408,
-      ModeloPolitico: "Monarquia Absoluta",
-      Estabilidade: 78,     // 0–100
-      Urbanizacao: 35,      // 0–100
-      Tecnologia: 60,       // 0–100
-      PIBpercapita: 9604    // opcional (se faltar, calcula por PIB/Pop)
-    },
-    {
-      Pais: "Brasil",
-      Bandeira: "🇧🇷",
-      PIB: "US$ 2.100.000.000",
-      Populacao: "61.500.000",
-      ModeloPolitico: "República Presidencialista",
-      Estabilidade: "55",
-      Urbanizacao: "44",
-      Tecnologia: "57"
-    }
-  ];
-
-  renderPublicCountries(countries);
-  updateKPIs(countries);
-</script>
+  <script src="./js/services/firebase.js" type="module"></script>
+  <script src="./js/ui/renderer.js" type="module"></script>
+  <script src="./js/utils.js" type="module"></script>
+  <script src="./js/main.js" type="module"></script>
 </body>
-</html>Era</div>
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400 group-hover:text-brand-400 transition" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <circle cx="12" cy="12" r="10" stroke-width="1.5"/>
-                <path stroke-linecap="round" stroke-width="1.5" d="M12 6v6l4 2"/>
-              </svg>
-            </div>
-            <div class="text-2xl font-extrabold text-brand-400" id="era">1954</div>
-            <div class="text-xs text-slate-400">Histórico</div>
-          </div>
-
-          <div class="kpi-card group">
-            <div class="flex items-center justify-between mb-2">
-              <div class="text-sm text-slate-400 group-hover:text-slate-300 transition">
+</html>
