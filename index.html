@@ -1,556 +1,526 @@
 <!doctype html>
 <html lang="pt-br">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>WAR • Era 1954 — Portal Oficial</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WAR • Era 1954 — Portal Oficial</title>
 
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            bg: {
-              DEFAULT: "#0b1020",
-              soft: "#10172a",
-              ring: "#1e293b"
-            },
-            brand: {
-              50:"#fff7e6",100:"#ffefcc",200:"#ffe099",300:"#ffd166",400:"#ffc233",
-              500:"#ffb400",600:"#e09f00",700:"#b37d00",800:"#805900",900:"#4d3600"
-            }
-          },
-          boxShadow: {
-            card: "0 1px 0 0 rgba(255,255,255,0.03) inset, 0 6px 20px -12px rgba(0,0,0,0.6)"
-          },
-          animation: {
-            'fade-in': 'fadeIn 0.5s ease-in-out',
-            'slide-up': 'slideUp 0.3s ease-out',
-            'pulse-soft': 'pulseSoft 2s infinite'
-          },
-          keyframes: {
-            fadeIn: {
-              '0%': { opacity: '0', transform: 'translateY(10px)' },
-              '100%': { opacity: '1', transform: 'translateY(0)' }
-            },
-            slideUp: {
-              '0%': { opacity: '0', transform: 'translateY(20px)' },
-              '100%': { opacity: '1', transform: 'translateY(0)' }
-            },
-            pulseSoft: {
-              '0%, 100%': { opacity: '1' },
-              '50%': { opacity: '0.7' }
-            }
-          }
-        }
-      }
-    }
-  </script>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            bg: {
+              DEFAULT: "#0b1020",
+              soft: "#10172a",
+              ring: "#1e293b"
+            },
+            brand: {
+              50:"#fff7e6",100:"#ffefcc",200:"#ffe099",300:"#ffd166",400:"#ffc233",
+              500:"#ffb400",600:"#e09f00",700:"#b37d00",800:"#805900",900:"#4d3600"
+            }
+          }
+        }
+      }
+    }
+  </script>
 
-  <!-- Inter Font -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  
-  <!-- CSS customizado -->
-  <link rel="stylesheet" href="./css/style.css">
+  <!-- Inter Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    :root { color-scheme: dark; }
+    body { 
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif;
+      background: #0b1020;
+      color: #e2e8f0;
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 2rem;
+      align-items: start;
+    }
+
+    .kpis-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+    }
+
+    .kpi-card {
+      background: #10172a;
+      border: 1px solid rgba(30, 41, 59, 0.7);
+      border-radius: 1rem;
+      padding: 1rem;
+      transition: all 0.3s ease;
+      box-shadow: 0 1px 0 0 rgba(255,255,255,0.03) inset, 0 6px 20px -12px rgba(0,0,0,0.6);
+    }
+
+    .kpi-card:hover {
+      box-shadow: 0 8px 25px -12px rgba(0,0,0,0.8);
+      border-color: rgba(71, 85, 105, 0.6);
+    }
+
+    .player-panel {
+      background: #10172a;
+      border: 1px solid rgba(30, 41, 59, 0.7);
+      border-radius: 1rem;
+      padding: 1.5rem;
+      margin-top: 1.5rem;
+      box-shadow: 0 1px 0 0 rgba(255,255,255,0.03) inset, 0 6px 20px -12px rgba(0,0,0,0.6);
+    }
+
+    .narrator-tools {
+      background: #10172a;
+      border: 1px solid rgba(30, 41, 59, 0.7);
+      border-radius: 1rem;
+      padding: 1.5rem;
+      box-shadow: 0 1px 0 0 rgba(255,255,255,0.03) inset, 0 6px 20px -12px rgba(0,0,0,0.6);
+    }
+
+    .loading-shimmer {
+      background: linear-gradient(90deg, rgba(30,41,59,0.4) 25%, rgba(30,41,59,0.6) 50%, rgba(30,41,59,0.4) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 0.25rem;
+      height: 1em;
+      width: 3em;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    @media (max-width: 1024px) {
+      .main-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+      }
+      
+      .kpis-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .kpis-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  </style>
 </head>
 <body class="bg-bg text-slate-200">
 
-  <!-- NAVBAR -->
-  <header class="border-b border-bg-ring/70 sticky top-0 z-40 bg-bg/90 backdrop-blur">
-    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <!-- Ícone melhorado -->
-        <div class="h-9 w-9 rounded-xl bg-brand-500/15 ring-1 ring-brand-500/30 grid place-items-center relative">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-brand-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3zM12 3v18M4 7.5l8 4.5m8-4.5l-8 4.5" />
-          </svg>
-          <div id="server-status" class="status-indicator hidden"></div>
-        </div>
-        <div>
-          <div class="text-sm text-slate-300/80">RPG de Países — <span class="text-slate-400">Portal Oficial</span></div>
-          <div class="font-extrabold tracking-tight">WAR • Era 1954</div>
-        </div>
-      </div>
+  <!-- NAVBAR -->
+  <header class="border-b border-bg-ring/70 sticky top-0 z-40 bg-bg/90 backdrop-blur">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="h-9 w-9 rounded-xl bg-brand-500/15 ring-1 ring-brand-500/30 grid place-items-center relative">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-brand-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3zM12 3v18M4 7.5l8 4.5m8-4.5l-8 4.5" />
+          </svg>
+        </div>
+        <div>
+          <div class="text-sm text-slate-300/80">RPG de Países — <span class="text-slate-400">Portal Oficial</span></div>
+          <div class="font-extrabold tracking-tight">WAR • Era 1954</div>
+        </div>
+      </div>
 
-      <nav class="hidden md:flex items-center gap-6 text-sm">
-        <a href="#paises" class="hover:text-white/90 transition">Países</a>
-        <a href="#turnos" class="hover:text-white/90 transition">Turnos</a>
-        <a href="#regras" class="hover:text-white/90 transition">Regras</a>
-        <a href="#narrador" class="hover:text-white/90 transition">Narrador</a>
-      </nav>
+      <nav class="hidden md:flex items-center gap-6 text-sm">
+        <a href="#paises" class="hover:text-white/90 transition">Países</a>
+        <a href="#turnos" class="hover:text-white/90 transition">Turnos</a>
+        <a href="#regras" class="hover:text-white/90 transition">Regras</a>
+        <a href="#narrador" class="hover:text-white/90 transition">Narrador</a>
+      </nav>
 
-      <div class="flex items-center gap-3">
-        <div id="connection-status" class="hidden text-xs text-emerald-400 animate-pulse">● Online</div>
-        <button id="auth-button" class="rounded-xl px-3.5 py-2 text-sm font-medium border border-bg-ring/80 hover:border-slate-500/60 hover:bg-white/5 transition-all duration-200">
-          <span class="loading-shimmer hidden">Carregando...</span>
-          <span class="btn-text">Entrar</span>
-        </button>
-      </div>
-    </div>
-  </header>
+      <div class="flex items-center gap-3">
+        <div id="connection-status" class="hidden text-xs text-emerald-400">● Online</div>
+        <button id="auth-button" class="rounded-xl px-3.5 py-2 text-sm font-medium border border-bg-ring/80 hover:border-slate-500/60 hover:bg-white/5 transition-all duration-200">
+          <span class="btn-text">Entrar</span>
+        </button>
+      </div>
+    </div>
+  </header>
 
-  <!-- Modal de Login Melhorado -->
-  <div id="login-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm hidden">
-    <div class="w-full max-w-sm rounded-2xl bg-bg-soft border border-bg-ring/70 p-6 shadow-card animate-slide-up">
-      <div class="text-center">
-        <div class="h-12 w-12 rounded-xl bg-brand-500/15 ring-1 ring-brand-500/30 grid place-items-center mx-auto">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-brand-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-          </svg>
-        </div>
-        <h2 class="mt-4 text-xl font-bold">Acesso ao Portal</h2>
-        <p class="text-sm text-slate-400 mt-1">Entre com suas credenciais</p>
-      </div>
-      
-      <form id="login-form" class="mt-6 space-y-4">
-        <div class="space-y-1">
-          <label for="email" class="text-sm text-slate-300">Email</label>
-          <input type="email" id="email" placeholder="seu@email.com" required 
-                 class="w-full rounded-xl bg-bg border border-bg-ring/70 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500/50 transition-all">
-        </div>
-        <div class="space-y-1">
-          <label for="password" class="text-sm text-slate-300">Senha</label>
-          <input type="password" id="password" placeholder="••••••••" required 
-                 class="w-full rounded-xl bg-bg border border-bg-ring/70 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500/50 transition-all">
-        </div>
-        <button type="submit" id="login-submit" class="w-full rounded-xl px-4 py-2.5 bg-brand-500 text-slate-950 font-semibold shadow-card hover:bg-brand-400 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
-          <span class="submit-text">Entrar</span>
-          <span class="submit-loading hidden">
-            <svg class="animate-spin h-4 w-4 mx-auto" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
-            </svg>
-          </span>
-        </button>
-      </form>
-      
-      <div id="login-error-message" class="mt-4 text-sm text-red-400 text-center hidden rounded-lg bg-red-500/10 p-2 border border-red-500/20"></div>
-      
-      <button id="close-modal" class="mt-4 w-full text-sm text-slate-400 hover:text-slate-200 transition">
-        Fechar
-      </button>
-    </div>
-  </div>
+  <!-- HERO SECTION -->
+  <section class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+    <div class="main-grid">
+      <!-- Coluna principal -->
+      <div class="space-y-6">
+        <div>
+          <h1 class="text-4xl sm:text-5xl font-extrabold leading-tight mb-4">
+            Seu país. Suas estratégias.
+            <span class="block text-brand-400">Um mundo dinâmico.</span>
+          </h1>
+          <p class="text-lg text-slate-300/90 max-w-2xl mb-6">
+            Portal integrado para o RPG de países da Guerra Fria. Acompanhe status do seu país, histórico por turno, tratados e painéis públicos.
+          </p>
+          <p class="text-base text-slate-400 max-w-2xl">
+            A narração e as imagens continuam no Facebook — aqui você controla seus números.
+          </p>
+        </div>
 
-  <!-- HERO -->
-  <section class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-10 pb-6">
-    <div class="grid lg:grid-cols-12 gap-8">
-      <div class="lg:col-span-7 animate-fade-in">
-        <h1 class="text-4xl sm:text-5xl font-extrabold leading-tight">
-          Seu país. Suas estratégias.
-          <span class="block text-brand-400 bg-gradient-to-r from-brand-400 to-brand-500 bg-clip-text text-transparent">Um mundo dinâmico.</span>
-        </h1>
-        <p class="mt-4 text-slate-300/90 max-w-2xl text-lg">
-          Portal integrado para o RPG de países da Guerra Fria. Acompanhe status do seu país, histórico por turno, tratados e painéis públicos.
-          <span class="block mt-2 text-base text-slate-400">A narração e as imagens continuam no Facebook — aqui você controla seus números.</span>
-        </p>
+        <div class="flex flex-col sm:flex-row gap-4">
+          <button id="main-login-btn" class="inline-flex items-center gap-2 rounded-xl px-5 py-3 bg-brand-500 text-slate-950 font-semibold hover:bg-brand-400 transition-all duration-200">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 3a1 1 0 01.894.553l8 16A1 1 0 0120 21H4a1 1 0 01-.894-1.447l8-16A1 1 0 0112 3z"/>
+            </svg>
+            Entrar e acessar
+          </button>
 
-        <div class="mt-8 flex flex-col sm:flex-row gap-4">
-          <a href="#" class="inline-flex items-center gap-2 rounded-xl px-5 py-3 bg-brand-500 text-slate-950 font-semibold shadow-card hover:bg-brand-400 hover:shadow-xl transition-all duration-200 transform hover:scale-105">
-            <span class="inline-grid place-items-center rounded-lg bg-slate-950/10 ring-1 ring-black/10 h-6 w-6">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 3a1 1 0 01.894.553l8 16A1 1 0 0120 21H4a1 1 0 01-.894-1.447l8-16A1 1 0 0112 3zm0 3.618L6.618 19h10.764L12 6.618z"/>
-              </svg>
-            </span>
-            Entrar e acessar
-          </a>
+          <a href="#" class="inline-flex items-center gap-2 rounded-xl px-5 py-3 border border-bg-ring/80 hover:border-slate-500/60 hover:bg-white/5 transition-all duration-200">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+            </svg>
+            Ver turnos (Facebook)
+          </a>
+        </div>
 
-          <a href="#" class="inline-flex items-center gap-2 rounded-xl px-5 py-3 border border-bg-ring/80 hover:border-slate-500/60 hover:bg-white/5 transition-all duration-200">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-[18px] w-[18px] text-blue-400" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-            </svg>
-            <span class="font-medium">Ver turnos (Facebook)</span>
-          </a>
-        </div>
-      </div>
+        <!-- Painel do Jogador -->
+        <div id="player-panel" class="player-panel" style="display: none;">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h2 class="text-lg font-semibold text-slate-100 flex items-center gap-2">
+                <span class="inline-grid h-6 w-6 place-items-center rounded-lg bg-emerald-500/15 text-emerald-400">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                  </svg>
+                </span>
+                Prévia do Painel do Jogador
+              </h2>
+              <h3 id="player-country-name" class="font-bold text-xl text-brand-400">Carregando...</h3>
+            </div>
+            <div class="text-right">
+              <div class="text-xs text-slate-400">Turno atual</div>
+              <div class="text-lg font-bold" id="player-current-turn">#12</div>
+            </div>
+          </div>
 
-      <!-- KPIs superiores melhorados -->
-      <div class="lg:col-span-5 grid sm:grid-cols-2 gap-4 animate-fade-in">
-        <!-- Era -->
-        <div class="rounded-2xl bg-bg-soft border border-bg-ring/70 p-4 shadow-card hover:shadow-lg transition-all duration-300 group">
-          <div class="flex items-center justify-between">
-            <div class="text-sm text-slate-400 group-hover:text-slate-300 transition">Era</div>
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400 group-hover:text-brand-400 transition" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <circle cx="12" cy="12" r="10" stroke-width="1.5"/>
-              <path stroke-linecap="round" stroke-width="1.5" d="M12 6v6l4 2"/>
-            </svg>
-          </div>
-          <div class="mt-2 text-3xl font-extrabold text-brand-400" id="era">1954</div>
-          <div class="mt-1 text-xs text-slate-400">Histórico</div>
-        </div>
+          <div class="grid grid-cols-3 gap-4 mb-6">
+            <div class="rounded-xl border border-bg-ring/70 p-4 bg-gradient-to-br from-emerald-500/5 to-transparent">
+              <div class="flex items-center justify-between mb-2">
+                <div class="text-sm text-slate-400">PIB</div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                </svg>
+              </div>
+              <div class="text-2xl font-extrabold text-emerald-400" id="player-pib">$ 83.826</div>
+              <div class="text-xs text-emerald-300 mt-1" id="player-pib-delta">+2,1%</div>
+            </div>
 
-        <!-- Turno aberto -->
-        <div class="rounded-2xl bg-bg-soft border border-bg-ring/70 p-4 shadow-card hover:shadow-lg transition-all duration-300 group">
-          <div class="flex items-center justify-between">
-            <label for="turno-editor" class="text-sm text-slate-400 group-hover:text-slate-300 transition">Turno aberto</label>
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400 group-hover:text-emerald-400 transition" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </div>
-          <input type="number" id="turno-editor" value="1" min="1" 
-                 class="mt-2 text-3xl font-extrabold bg-transparent w-full focus:outline-none focus:ring-0 text-emerald-400">
-          <div class="mt-1 text-xs text-slate-400">1/semana</div>
-        </div>
+            <div class="rounded-xl border border-bg-ring/70 p-4 bg-gradient-to-br from-yellow-500/5 to-transparent">
+              <div class="flex items-center justify-between mb-2">
+                <div class="text-sm text-slate-400">Estabilidade</div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+              </div>
+              <div class="text-2xl font-extrabold text-yellow-400" id="player-estabilidade">72/100</div>
+              <div class="text-xs text-yellow-300 mt-1" id="player-estabilidade-delta">-1</div>
+            </div>
 
-        <!-- Players -->
-        <div class="rounded-2xl bg-bg-soft border border-bg-ring/70 p-4 shadow-card hover:shadow-lg transition-all duration-300 group">
-          <div class="flex items-center justify-between">
-            <div class="text-sm text-slate-400 group-hover:text-slate-300 transition">Players</div>
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400 group-hover:text-blue-400 transition" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-            </svg>
-          </div>
-          <div class="mt-2 text-3xl font-extrabold text-blue-400" id="total-players">
-            <span class="loading-shimmer">---</span>
-          </div>
-          <div class="mt-1 text-xs text-slate-400">ativos</div>
-        </div>
+            <div class="rounded-xl border border-bg-ring/70 p-4 bg-gradient-to-br from-orange-500/5 to-transparent">
+              <div class="flex items-center justify-between mb-2">
+                <div class="text-sm text-slate-400">Combustível</div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" />
+                </svg>
+              </div>
+              <div class="text-2xl font-extrabold text-orange-400" id="player-combustivel">14.200</div>
+              <div class="text-xs text-orange-300 mt-1" id="player-combustivel-delta">+300</div>
+            </div>
+          </div>
 
-        <!-- PIB médio -->
-        <div class="rounded-2xl bg-bg-soft border border-bg-ring/70 p-4 shadow-card hover:shadow-lg transition-all duration-300 group">
-          <div class="flex items-center justify-between">
-            <div class="text-sm text-slate-400 group-hover:text-slate-300 transition">PIB médio</div>
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400 group-hover:text-emerald-400 transition" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-            </svg>
-          </div>
-          <div class="mt-2 text-3xl font-extrabold text-emerald-400" id="pib-medio">
-            <span class="loading-shimmer">---</span>
-          </div>
-          <div class="mt-1 text-xs text-slate-400">no último turno</div>
-        </div>
+          <div class="grid grid-cols-2 gap-6">
+            <div class="rounded-xl border border-bg-ring/70 p-4 bg-gradient-to-br from-blue-500/5 to-transparent">
+              <div class="text-sm font-medium text-slate-100 mb-3">Histórico recente</div>
+              <div class="space-y-2 text-sm" id="player-historico">
+                <div class="text-slate-300">Turno 12: +2,1% PIB, -1 Estab. — ver post</div>
+                <div class="text-slate-300">Turno 11: +1,3% PIB — ver post</div>
+                <div class="text-slate-300">Turno 10: +0,5% PIB — ver post</div>
+              </div>
+            </div>
 
-        <!-- Estabilidade média -->
-        <div class="rounded-2xl bg-bg-soft border border-bg-ring/70 p-4 shadow-card hover:shadow-lg transition-all duration-300 group">
-          <div class="flex items-center justify-between">
-            <div class="text-sm text-slate-400 group-hover:text-slate-300 transition">Estabilidade</div>
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400 group-hover:text-yellow-400 transition" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-            </svg>
-          </div>
-          <div class="mt-2 text-3xl font-extrabold text-yellow-400" id="estabilidade-media">
-            <span class="loading-shimmer">---</span>
-          </div>
-          <div class="mt-1 text-xs text-slate-400">média global</div>
-        </div>
+            <div class="rounded-xl border border-bg-ring/70 p-4 bg-gradient-to-br from-purple-500/5 to-transparent">
+              <div class="text-sm font-medium text-slate-100 mb-3">Ações do país</div>
+              <div class="grid grid-cols-2 gap-3">
+                <button class="rounded-xl py-2.5 text-center text-xs border border-bg-ring/70 hover:bg-white/5 hover:border-emerald-500/30 hover:text-emerald-400 transition-all">
+                  <div class="font-medium">Produção</div>
+                  <div class="text-slate-400">Recursos</div>
+                </button>
+                <button class="rounded-xl py-2.5 text-center text-xs border border-bg-ring/70 hover:bg-white/5 hover:border-blue-500/30 hover:text-blue-400 transition-all">
+                  <div class="font-medium">Mercado</div>
+                  <div class="text-slate-400">Comércio</div>
+                </button>
+                <button class="rounded-xl py-2.5 text-center text-xs border border-bg-ring/70 hover:bg-white/5 hover:border-yellow-500/30 hover:text-yellow-400 transition-all">
+                  <div class="font-medium">Tratados</div>
+                  <div class="text-slate-400">Diplomacia</div>
+                </button>
+                <button class="rounded-xl py-2.5 text-center text-xs border border-bg-ring/70 hover:bg-white/5 hover:border-red-500/30 hover:text-red-400 transition-all">
+                  <div class="font-medium">Design (equip.)</div>
+                  <div class="text-slate-400">Equipamentos</div>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-        <!-- Países públicos -->
-        <div class="rounded-2xl bg-bg-soft border border-bg-ring/70 p-4 shadow-card hover:shadow-lg transition-all duration-300 group">
-          <div class="flex items-center justify-between">
-            <div class="text-sm text-slate-400 group-hover:text-slate-300 transition">Países</div>
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400 group-hover:text-purple-400 transition" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </div>
-          <div class="mt-2 text-3xl font-extrabold text-purple-400" id="paises-publicos">
-            <span class="loading-shimmer">---</span>
-          </div>
-          <div class="mt-1 text-xs text-slate-400">visíveis</div>
-        </div>
-      </div>
-    </div>
-  </section>
+      <!-- Coluna lateral -->
+      <div class="space-y-6">
+        <!-- KPIs -->
+        <div class="kpis-grid">
+          <div class="kpi-card group">
+            <div class="flex items-center justify-between mb-2">
+              <div class="text-sm text-slate-400 group-hover:text-slate-300 transition">Turno aberto</div>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400 group-hover:text-emerald-400 transition" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div class="text-2xl font-extrabold text-emerald-400" id="turno-atual">#12</div>
+            <div class="text-xs text-slate-400">1/semana</div>
+          </div>
 
-  <!-- CORPO PRINCIPAL -->
-  <main class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-16">
-    <div class="grid lg:grid-cols-12 gap-8">
-      <!-- Painel do Jogador melhorado -->
-      <section class="lg:col-span-7" id="player-panel" style="display: none;">
-        <div class="rounded-2xl bg-bg-soft border border-bg-ring/70 p-6 shadow-card animate-slide-up">
-          <div class="flex items-center justify-between mb-4">
-            <div>
-              <h2 class="font-semibold text-slate-100 flex items-center gap-2">
-                <span class="inline-grid h-6 w-6 place-items-center rounded-lg bg-emerald-500/15 ring-1 ring-emerald-500/25 text-emerald-400">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                  </svg>
-                </span>
-                Painel do Jogador
-              </h2>
-              <h3 id="player-country-name" class="font-bold text-2xl text-brand-400">Carregando...</h3>
-            </div>
-            <div class="text-right">
-              <div class="text-xs text-slate-400">Turno atual</div>
-              <div class="text-lg font-bold text-slate-200" id="player-current-turn">---</div>
-            </div>
-          </div>
+          <div class="kpi-card group">
+            <div class="flex items-center justify-between mb-2">
+              <div class="text-sm text-slate-400 group-hover:text-slate-300 transition">Players</div>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400 group-hover:text-blue-400 transition" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+            </div>
+            <div class="text-2xl font-extrabold text-blue-400" id="total-players">16</div>
+            <div class="text-xs text-slate-400">ativos</div>
+          </div>
 
-          <div class="grid sm:grid-cols-3 gap-4 mb-6">
-            <!-- PIB -->
-            <div class="rounded-xl border border-bg-ring/70 p-4 bg-gradient-to-br from-emerald-500/5 to-transparent hover:from-emerald-500/10 transition-all">
-              <div class="flex items-center justify-between mb-2">
-                <div class="text-sm text-slate-400">PIB</div>
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                </svg>
-              </div>
-              <div class="text-2xl font-extrabold text-emerald-400" id="player-pib">---</div>
-              <div class="text-xs text-emerald-300 mt-1" id="player-pib-delta">---</div>
-            </div>
+          <div class="kpi-card group">
+            <div class="flex items-center justify-between mb-2">
+              <div class="text-sm text-slate-400 group-hover:text-slate-300 transition">PIB médio</div>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400 group-hover:text-emerald-400 transition" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+              </svg>
+            </div>
+            <div class="text-2xl font-extrabold text-emerald-400" id="pib-medio">+1,7%</div>
+            <div class="text-xs text-slate-400">no último turno</div>
+          </div>
 
-            <!-- Estabilidade -->
-            <div class="rounded-xl border border-bg-ring/70 p-4 bg-gradient-to-br from-yellow-500/5 to-transparent hover:from-yellow-500/10 transition-all">
-              <div class="flex items-center justify-between mb-2">
-                <div class="text-sm text-slate-400">Estabilidade</div>
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                </svg>
-              </div>
-              <div class="text-2xl font-extrabold text-yellow-400" id="player-estabilidade">---</div>
-              <div class="text-xs text-yellow-300 mt-1" id="player-estabilidade-delta">---</div>
-            </div>
+          <div class="kpi-card group">
+            <div class="flex items-center justify-between mb-2">
+              <div class="text-sm text-slate-400 group-hover:text-slate-300 transition">Estabilidade</div>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400 group-hover:text-yellow-400 transition" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <circle cx="12" cy="12" r="9" stroke-width="1.5"/>
+                <path stroke-linecap="round" stroke-width="1.5" d="M12 7v5l3 3"/>
+              </svg>
+            </div>
+            <div class="text-2xl font-extrabold text-yellow-400" id="estabilidade-media">78/100</div>
+            <div class="text-xs text-slate-400">média</div>
+          </div>
 
-            <!-- Combustível -->
-            <div class="rounded-xl border border-bg-ring/70 p-4 bg-gradient-to-br from-orange-500/5 to-transparent hover:from-orange-500/10 transition-all">
-              <div class="flex items-center justify-between mb-2">
-                <div class="text-sm text-slate-400">Combustível</div>
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" />
-                </svg>
-              </div>
-              <div class="text-2xl font-extrabold text-orange-400" id="player-combustivel">---</div>
-              <div class="text-xs text-orange-300 mt-1" id="player-combustivel-delta">---</div>
-            </div>
-          </div>
+          <div class="kpi-card group">
+            <div class="flex items-center justify-between mb-2">
+              <div class="text-sm text-slate-400 group-hover:text-slate-300 transition">Países</div>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400 group-hover:text-purple-400 transition" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div class="text-2xl font-extrabold text-purple-400" id="paises-publicos">4</div>
+            <div class="text-xs text-slate-400">públicos</div>
+          </div>
+        </div>
 
-          <div class="grid lg:grid-cols-2 gap-6">
-            <!-- Histórico melhorado -->
-            <div class="rounded-xl border border-bg-ring/70 p-4 bg-gradient-to-br from-blue-500/5 to-transparent">
-              <div class="flex items-center justify-between mb-3">
-                <div class="text-sm font-medium text-slate-100">Histórico recente</div>
-                <button class="text-xs text-slate-400 hover:text-slate-200 transition" onclick="toggleHistorico()">
-                  <span id="historico-toggle">Ver mais</span>
-                </button>
-              </div>
-              <div class="space-y-2 max-h-32 overflow-y-auto" id="player-historico">
-                <div class="text-sm text-slate-400 italic">Carregando histórico...</div>
-              </div>
-            </div>
+        <!-- Ferramentas do Narrador -->
+        <div id="narrator-tools" class="narrator-tools" style="display: none;">
+          <div class="flex items-center gap-2 mb-4">
+            <span class="inline-grid h-6 w-6 place-items-center rounded-lg bg-brand-500/15 ring-1 ring-brand-500/25 text-brand-400">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+              </svg>
+            </span>
+            <h2 class="font-semibold text-slate-100">Ferramentas do Narrador</h2>
+            <div class="ml-auto">
+              <span id="user-role-badge" class="text-xs px-2 py-1 rounded-full bg-brand-500/10 text-brand-400 border border-brand-500/20">Admin</span>
+            </div>
+          </div>
 
-            <!-- Ações do país melhoradas -->
-            <div class="rounded-xl border border-bg-ring/70 p-4 bg-gradient-to-br from-purple-500/5 to-transparent">
-              <div class="text-sm font-medium text-slate-100 mb-3">Ações disponíveis</div>
-              <div class="grid grid-cols-2 gap-3">
-                <button class="group rounded-xl py-2.5 text-center border border-bg-ring/70 hover:bg-white/5 hover:border-emerald-500/30 hover:text-emerald-400 transition-all duration-200">
-                  <div class="text-xs font-medium">Produção</div>
-                  <div class="text-xs text-slate-400 group-hover:text-emerald-300">Recursos</div>
-                </button>
-                <button class="group rounded-xl py-2.5 text-center border border-bg-ring/70 hover:bg-white/5 hover:border-blue-500/30 hover:text-blue-400 transition-all duration-200">
-                  <div class="text-xs font-medium">Mercado</div>
-                  <div class="text-xs text-slate-400 group-hover:text-blue-300">Comércio</div>
-                </button>
-                <button class="group rounded-xl py-2.5 text-center border border-bg-ring/70 hover:bg-white/5 hover:border-yellow-500/30 hover:text-yellow-400 transition-all duration-200">
-                  <div class="text-xs font-medium">Tratados</div>
-                  <div class="text-xs text-slate-400 group-hover:text-yellow-300">Diplomacia</div>
-                </button>
-                <button class="group rounded-xl py-2.5 text-center border border-bg-ring/70 hover:bg-white/5 hover:border-red-500/30 hover:text-red-400 transition-all duration-200">
-                  <div class="text-xs font-medium">Equipamentos</div>
-                  <div class="text-xs text-slate-400 group-hover:text-red-300">Design</div>
-                </button>
-              </div>
-            </div>
-          </div>
+          <p class="text-sm text-slate-300/90 mb-6">
+            Sem imagens aqui — os posts e a narração completa seguem no Facebook.
+            Use estes atalhos para aplicar mudanças e colar os links oficiais do turno.
+          </p>
 
-          <!-- Seção de notificações -->
-          <div id="player-notifications" class="mt-4 hidden">
-            <div class="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4">
-              <div class="flex items-start gap-3">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-amber-400 mt-0.5" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                </svg>
-                <div>
-                  <div class="text-sm font-medium text-amber-100">Turno em andamento</div>
-                  <div class="text-xs text-amber-200/80 mt-1">Você tem ações pendentes para este turno.</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+          <div class="space-y-3">
+            <button class="w-full rounded-xl bg-brand-500 text-slate-950 text-center font-semibold px-4 py-3 hover:bg-brand-400 transition-all">
+              Criar/editar turno
+            </button>
+            
+            <button class="w-full rounded-xl border border-emerald-500/30 bg-emerald-500/5 text-center px-4 py-3 hover:bg-emerald-500/10 hover:border-emerald-500/50 transition-all">
+              <span class="text-emerald-400 font-medium">Aplicar deltas (PIB, estab.)</span>
+            </button>
+            
+            <button class="w-full rounded-xl border border-blue-500/30 bg-blue-500/5 text-center px-4 py-3 hover:bg-blue-500/10 hover:border-blue-500/50 transition-all">
+              <span class="text-blue-400 font-medium">Vincular jogador → país</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-      <!-- Ferramentas do Narrador melhoradas -->
-      <aside class="lg:col-span-5" id="narrator-tools" style="display: none;">
-        <div class="space-y-6">
-          <!-- Painel principal do narrador -->
-          <div class="rounded-2xl bg-bg-soft border border-bg-ring/70 p-6 shadow-card">
-            <div class="flex items-center gap-2 mb-4">
-              <span class="inline-grid h-6 w-6 place-items-center rounded-lg bg-brand-500/15 ring-1 ring-brand-500/25 text-brand-400">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                </svg>
-              </span>
-              <h2 class="font-semibold text-slate-100">Ferramentas do Narrador</h2>
-              <div class="ml-auto">
-                <span id="user-role-badge" class="text-xs px-2 py-1 rounded-full bg-brand-500/10 text-brand-400 border border-brand-500/20"></span>
-              </div>
-            </div>
+  <!-- Lista de Países -->
+  <section class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-16" id="paises">
+    <div class="flex items-center justify-between mb-6">
+      <div class="flex items-center gap-3">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-brand-400" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+        </svg>
+        <h3 class="text-xl font-bold text-slate-100">Países (público)</h3>
+        <div class="px-3 py-1 rounded-full bg-slate-700/50 text-xs text-slate-300" id="total-paises-badge">96 países</div>
+      </div>
+      
+      <div class="flex items-center gap-3">
+        <select id="filtro-visibilidade" class="text-xs rounded-lg bg-bg-soft border border-bg-ring/70 px-3 py-2 text-slate-200">
+          <option value="todos">Todos os países</option>
+          <option value="publicos">Apenas Públicos</option>
+          <option value="privados">Apenas Privados</option>
+          <option value="com-jogadores">Com Jogadores</option>
+          <option value="sem-jogadores">Livres</option>
+        </select>
+        <button id="refresh-paises" class="p-2 rounded-lg border border-bg-ring/70 hover:bg-white/5 transition text-slate-400 hover:text-slate-200">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+        </button>
+      </div>
+    </div>
 
-            <p class="text-sm text-slate-300/90 mb-6">
-              Gerencie turnos, aplique mudanças nos países e mantenha a sincronia com o Facebook.
-            </p>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" id="lista-paises-publicos">
+      <!-- Cards de exemplo -->
+      <div class="rounded-2xl bg-bg-soft border border-bg-ring/70 p-4 hover:border-slate-500/60 hover:bg-white/[0.04] transition-all cursor-pointer">
+        <div class="flex items-center justify-between mb-3">
+          <div class="text-sm text-slate-400">#01</div>
+          <div class="flex items-center gap-2">
+            <div class="text-xs rounded-md px-2 py-0.5 border border-emerald-600/30 text-emerald-300/90 bg-emerald-500/10">70/100</div>
+            <div class="text-xs px-2 py-0.5 rounded-md bg-blue-500/10 text-blue-400 border border-blue-500/20">👤 Ativo</div>
+          </div>
+        </div>
+        <div class="mb-3">
+          <div class="font-semibold text-lg">Afeganistão</div>
+          <div class="text-sm text-slate-400 mt-1">PIB: US$ 523.704.480 • Pop: 8.728.408</div>
+        </div>
+        <div class="flex items-center justify-between text-xs">
+          <div class="text-slate-500">Estabilidade</div>
+          <div class="flex items-center gap-1">
+            <div class="w-16 h-1 bg-slate-700 rounded-full overflow-hidden">
+              <div class="h-full bg-emerald-400 transition-all duration-500" style="width: 35%"></div>
+            </div>
+            <span class="text-slate-400 ml-1">35%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-            <div class="space-y-3">
-              <button class="w-full rounded-xl bg-brand-500 text-slate-950 text-center font-semibold px-4 py-3 hover:bg-brand-400 hover:shadow-lg transition-all duration-200 transform hover:scale-[1.02]">
-                <div class="flex items-center justify-center gap-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                  </svg>
-                  Criar/editar turno
-                </div>
-              </button>
-              
-              <button class="w-full rounded-xl border border-emerald-500/30 bg-emerald-500/5 text-center px-4 py-3 hover:bg-emerald-500/10 hover:border-emerald-500/50 transition-all duration-200">
-                <div class="flex items-center justify-center gap-2 text-emerald-400">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4" />
-                  </svg>
-                  <span class="font-medium">Aplicar deltas (PIB, estab.)</span>
-                </div>
-              </button>
-              
-              <button class="w-full rounded-xl border border-blue-500/30 bg-blue-500/5 text-center px-4 py-3 hover:bg-blue-500/10 hover:border-blue-500/50 transition-all duration-200">
-                <div class="flex items-center justify-center gap-2 text-blue-400">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                  </svg>
-                  <span class="font-medium">Vincular jogador → país</span>
-                </div>
-              </button>
-            </div>
-          </div>
+  <!-- Modal de Login -->
+  <div id="login-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm hidden">
+    <div class="w-full max-w-sm rounded-2xl bg-bg-soft border border-bg-ring/70 p-6">
+      <div class="text-center">
+        <div class="h-12 w-12 rounded-xl bg-brand-500/15 ring-1 ring-brand-500/30 grid place-items-center mx-auto">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-brand-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          </svg>
+        </div>
+        <h2 class="mt-4 text-xl font-bold">Acesso ao Portal</h2>
+        <p class="text-sm text-slate-400 mt-1">Entre com suas credenciais</p>
+      </div>
+      
+      <form id="login-form" class="mt-6 space-y-4">
+        <div class="space-y-1">
+          <label for="email" class="text-sm text-slate-300">Email</label>
+          <input type="email" id="email" placeholder="seu@email.com" required 
+                 class="w-full rounded-xl bg-bg border border-bg-ring/70 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500/50 transition-all">
+        </div>
+        <div class="space-y-1">
+          <label for="password" class="text-sm text-slate-300">Senha</label>
+          <input type="password" id="password" placeholder="••••••••" required 
+                 class="w-full rounded-xl bg-bg border border-bg-ring/70 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500/50 transition-all">
+        </div>
+        <button type="submit" class="w-full rounded-xl px-4 py-2.5 bg-brand-500 text-slate-950 font-semibold hover:bg-brand-400 transition-all duration-200">
+          Entrar
+        </button>
+      </form>
+      
+      <div id="login-error-message" class="mt-4 text-sm text-red-400 text-center hidden rounded-lg bg-red-500/10 p-2 border border-red-500/20"></div>
+      
+      <button id="close-modal" class="mt-4 w-full text-sm text-slate-400 hover:text-slate-200 transition">
+        Fechar
+      </button>
+    </div>
+  </div>
 
-          <!-- Status do sistema -->
-          <div class="rounded-2xl bg-bg-soft border border-bg-ring/70 p-4 shadow-card">
-            <div class="flex items-center gap-2 mb-3">
-              <div class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></div>
-              <h3 class="text-sm font-medium text-slate-200">Status do Sistema</h3>
-            </div>
-            <div class="space-y-2 text-xs">
-              <div class="flex justify-between">
-                <span class="text-slate-400">Firebase</span>
-                <span class="text-emerald-400">● Conectado</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-slate-400">Última sincronização</span>
-                <span class="text-slate-300" id="last-sync">---</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-slate-400">Jogadores online</span>
-                <span class="text-blue-400" id="players-online">0</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </aside>
-    </div>
+  <!-- Footer -->
+  <footer class="border-t border-bg-ring/70 bg-bg-soft/50">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+      <div class="text-center">
+        <div class="flex items-center justify-center gap-2 mb-4">
+          <div class="h-8 w-8 rounded-lg bg-brand-500/15 ring-1 ring-brand-500/30 grid place-items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-brand-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3zM12 3v18M4 7.5l8 4.5m8-4.5l-8 4.5" />
+            </svg>
+          </div>
+          <div class="font-bold text-slate-200">WAR • Era 1954</div>
+        </div>
+        <p class="text-sm text-slate-400">
+          Portal oficial do RPG de países da Guerra Fria.<br>
+          Gerencie seu país e acompanhe a evolução do mundo.
+        </p>
+        <div class="mt-6 pt-6 border-t border-bg-ring/50">
+          <p class="text-sm text-slate-500">
+            © 2024 WAR • Era 1954 — Comunidade RPG | Desenvolvido com ❤️ para a comunidade
+          </p>
+        </div>
+      </div>
+    </div>
+  </footer>
 
-    <!-- Lista de Países melhorada -->
-    <section class="mt-12" id="paises">
-      <div class="flex items-center justify-between mb-6">
-        <div class="flex items-center gap-3">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-brand-400" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-          </svg>
-          <h3 class="text-2xl font-bold text-slate-100">Países Participantes</h3>
-          <div class="px-3 py-1 rounded-full bg-slate-700/50 text-xs text-slate-300" id="total-paises-badge">0 países</div>
-        </div>
-        
-        <!-- Filtros melhorados -->
-        <div class="flex items-center gap-3">
-          <select id="filtro-visibilidade" class="text-xs rounded-lg bg-bg border border-bg-ring/70 px-3 py-2 text-slate-200">
-            <option value="todos">Todos os países</option>
-            <option value="publicos">Apenas Públicos</option>
-            <option value="privados">Apenas Privados</option>
-            <option value="com-jogadores">Com Jogadores</option>
-            <option value="sem-jogadores">Livres</option>
-          </select>
-          <button id="refresh-paises" class="p-2 rounded-lg border border-bg-ring/70 hover:bg-white/5 transition text-slate-400 hover:text-slate-200" title="Atualizar dados">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-          </button>
-        </div>
-      </div>
+  <script>
+    // Simulação básica para demonstração visual
+    document.getElementById('main-login-btn').addEventListener('click', () => {
+      document.getElementById('login-modal').classList.remove('hidden');
+    });
 
-      <!-- Container onde os cards serão injetados -->
-      <div class="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" id="lista-paises-publicos">
-        <!-- Loading cards -->
-        <div class="animate-pulse">
-          <div class="rounded-2xl bg-bg-soft border border-bg-ring/70 p-4">
-            <div class="flex justify-between items-center mb-3">
-              <div class="h-4 bg-slate-700 rounded w-8"></div>
-              <div class="h-4 bg-slate-700 rounded w-16"></div>
-            </div>
-            <div class="h-5 bg-slate-700 rounded w-3/4 mb-2"></div>
-            <div class="h-3 bg-slate-700 rounded w-1/2"></div>
-          </div>
-        </div>
-      </div>
+    document.getElementById('auth-button').addEventListener('click', () => {
+      document.getElementById('login-modal').classList.remove('hidden');
+    });
 
-      <!-- Estado vazio -->
-      <div id="empty-state" class="hidden text-center py-12">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-slate-500 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-        </svg>
-        <div class="text-lg font-medium text-slate-400 mb-2">Nenhum país encontrado</div>
-        <div class="text-sm text-slate-500">Ajuste os filtros ou adicione novos países ao jogo.</div>
-      </div>
-    </section>
-  </main>
+    document.getElementById('close-modal').addEventListener('click', () => {
+      document.getElementById('login-modal').classList.add('hidden');
+    });
 
-  <!-- FOOTER -->
-  <footer class="border-t border-bg-ring/70 bg-bg-soft/50">
-    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
-      <div class="grid md:grid-cols-3 gap-8">
-        <div>
-          <div class="flex items-center gap-2 mb-4">
-            <div class="h-8 w-8 rounded-lg bg-brand-500/15 ring-1 ring-brand-500/30 grid place-items-center">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-brand-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3zM12 3v18M4 7.5l8 4.5m8-4.5l-8 4.5" />
-              </svg>
-            </div>
-            <div class="font-bold text-slate-200">WAR • Era 1954</div>
-          </div>
-          <p class="text-sm text-slate-400 max-w-sm">
-            Portal oficial do RPG de países da Guerra Fria. Gerencie seu país e acompanhe a evolução do mundo.
-          </p>
-        </div>
-        
-        <div>
-          <h4 class="font-semibold text-slate-200 mb-3">Links Rápidos</h4>
-          <div class="space-y-2 text-sm">
-            <a href="#" class="block text-slate-400 hover:text-slate-200 transition">Regras do Jogo</a>
-            <a href="#" class="block text-slate-400 hover:text-slate-200 transition">Grupo no Facebook</a>
-            <a href="#" class="block text-slate-400 hover:text-slate-200 transition">Canal do Discord</a>
-            <a href="#" class="block text-slate-400 hover:text-slate-200 transition">Guia para Iniciantes</a>
-          </div>
-        </div>
-        
-        <div>
-          <h4 class="font-semibold text-slate-200 mb-3">Suporte</h4>
-          <div class="space-y-2 text-sm">
-            <a href="#" class="block text-slate-400 hover:text-slate-200 transition">Contato</a>
-            <a href="#" class="block text-slate-400 hover:text-slate-200 transition">Relatórios de Bug</a>
-            <a href="#" class="block text-slate-400 hover:text-slate-200 transition">Política de Privacidade</a>
-            <a href="#" class="block text-slate-400 hover:text-slate-200 transition">Termos de Uso</a>
-          </div>
-        </div>
-      </div>
-      
-      <div class="border-t border-bg-ring/50 mt-8 pt-6 text-center">
-        <p class="text-sm text-slate-400">
-          © 2024 WAR • Era 1954 — Comunidade RPG | 
-          <span class="text-slate-500">Desenvolvido com ❤️ para a comunidade</span>
-        </p>
-      </div>
-    </div>
-  </footer>
-
-  <!-- Ponto de entrada do JavaScript -->
-  <script type="module" src="./js/main.js"></script>
+    // Simular login para mostrar painel do jogador
+    document.getElementById('login-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      document.getElementById('login-modal').classList.add('hidden');
+      document.getElementById('player-panel').style.display = 'block';
+      document.getElementById('narrator-tools').style.display = 'block';
+      document.getElementById('auth-button').querySelector('.btn-text').textContent = 'Sair';
+    });
+  </script>
 </body>
-</html>
+</html>Era</div>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400 group-hover:text-brand-400 transition" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <circle cx="12" cy="12" r="10" stroke-width="1.5"/>
+                <path stroke-linecap="round" stroke-width="1.5" d="M12 6v6l4 2"/>
+              </svg>
+            </div>
+            <div class="text-2xl font-extrabold text-brand-400" id="era">1954</div>
+            <div class="text-xs text-slate-400">Histórico</div>
+          </div>
+
+          <div class="kpi-card group">
+            <div class="flex items-center justify-between mb-2">
+              <div class="text-sm text-slate-400 group-hover:text-slate-300 transition">
