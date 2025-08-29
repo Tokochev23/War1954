@@ -77,7 +77,7 @@ export function renderPublicCountries(countries) {
             <div class="flex items-center justify-between gap-3">
                 <div class="flex items-center gap-2">
                     <div class="h-7 w-10 flex-shrink-0 grid place-items-center rounded-md ring-1 ring-white/10 bg-slate-800 text-2xl">
-                        ${country.Bandeera}
+                        ${country.Bandeira}
                     </div>
                     <div class="min-w-0">
                         <div class="truncate text-sm font-semibold text-slate-100">
