@@ -510,6 +510,39 @@
       document.getElementById('auth-button').querySelector('.btn-text').textContent = 'Sair';
     });
   </script>
+  <script type="module">
+  import { renderPublicCountries, updateKPIs } from "./js/painel-publico.js";
+
+  // EXEMPLO: troque este array pelos seus países (ou faça fetch/Firestore)
+  const countries = [
+    {
+      Pais: "Afeganistão",
+      // Pode ser emoji (🇦🇫) ou URL de imagem (BandeiraURL). Se tiver ambos, use qualquer um.
+      Bandeira: "🇦🇫",
+      // Aceita número ou string em pt-BR (ex.: "US$ 523.704.480")
+      PIB: 523704480,
+      Populacao: 8728408,
+      ModeloPolitico: "Monarquia Absoluta",
+      Estabilidade: 78,     // 0–100
+      Urbanizacao: 35,      // 0–100
+      Tecnologia: 60,       // 0–100
+      PIBpercapita: 9604    // opcional (se faltar, calcula por PIB/Pop)
+    },
+    {
+      Pais: "Brasil",
+      Bandeira: "🇧🇷",
+      PIB: "US$ 2.100.000.000",
+      Populacao: "61.500.000",
+      ModeloPolitico: "República Presidencialista",
+      Estabilidade: "55",
+      Urbanizacao: "44",
+      Tecnologia: "57"
+    }
+  ];
+
+  renderPublicCountries(countries);
+  updateKPIs(countries);
+</script>
 </body>
 </html>Era</div>
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400 group-hover:text-brand-400 transition" viewBox="0 0 24 24" fill="none" stroke="currentColor">
