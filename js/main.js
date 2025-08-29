@@ -1,5 +1,5 @@
 import { auth, checkUserPermissions, checkPlayerCountry, getAvailableCountries, vincularJogadorAoPais, getAllCountries, getGameConfig, updateTurn } from "./services/firebase.js";
-import { renderPublicCountries, updateKPIs, fillPlayerPanel, createCountrySelectionModal, showLoginModal, hideLoginModal, setLoginLoading, setLoginError, updateNarratorUI } from "./ui/renderer.js";
+import { renderPublicCountries, updateKPIs, fillPlayerPanel, createCountrySelectionModal, showLoginModal, hideLoginModal, setLoginLoading, setLoginError, updateNarratorUI, renderDetailedCountryPanel } from "./ui/renderer.js";
 import { showNotification } from "./utils.js";
 
 // Elementos do DOM
@@ -12,6 +12,10 @@ const filterSelect = document.getElementById('filtro-visibilidade');
 const refreshButton = document.getElementById('refresh-paises');
 const turnoEditor = document.getElementById('turno-editor');
 const lastSyncElement = document.getElementById('last-sync');
+const countryListContainer = document.getElementById('lista-paises-publicos');
+const countryPanelModal = document.getElementById('country-panel-modal');
+const closeCountryPanelBtn = document.getElementById('close-country-panel');
+
 
 // Estado da aplicação
 let appState = {
@@ -182,6 +186,31 @@ loginForm.addEventListener('submit', async (e) => {
         setLoginLoading(false);
     }
 });
+
+// Event listener para abrir o painel detalhado do país
+countryListContainer.addEventListener('click', (e) => {
+    const cardButton = e.target.closest('.country-card-button');
+    if (cardButton) {
+        const countryId = cardButton.dataset.countryId;
+        const countryData = appState.allCountries.find(c => c.id === countryId);
+        if (countryData) {
+            renderDetailedCountryPanel(countryData);
+            countryPanelModal.classList.remove('hidden');
+        } else {
+            showNotification('error', 'Dados do país não encontrados.');
+        }
+    }
+});
+
+// Event listener para fechar o painel detalhado do país
+closeCountryPanelBtn.addEventListener('click', () => {
+    countryPanelModal.classList.add('opacity-0');
+    countryPanelModal.querySelector('div').classList.add('-translate-y-2');
+    setTimeout(() => {
+        countryPanelModal.classList.add('hidden');
+    }, 300); // tempo da transição
+});
+
 
 filterSelect.addEventListener('change', filterAndRenderCountries);
 refreshButton.addEventListener('click', loadSiteData);
