@@ -56,7 +56,8 @@ export function formatDelta(atual, anterior) {
 // Anima um contador para um valor final
 export function animateCounter(elementId, finalValue) {
     const element = document.getElementById(elementId);
-    const currentValue = parseInt(element.textContent) || 0;
+    if (!element) return; // Garante que o elemento existe
+    const currentValue = parseInt(element.textContent.replace(/,/g, '')) || 0;
     const diff = finalValue - currentValue;
     const duration = 1000;
     const increment = diff / (duration / 50);
@@ -68,7 +69,7 @@ export function animateCounter(elementId, finalValue) {
             counter = finalValue;
             clearInterval(timer);
         }
-        element.textContent = Math.round(counter);
+        element.textContent = Math.round(counter).toLocaleString('pt-BR');
     }, 50);
 }
 
