@@ -1,7 +1,6 @@
 import { showNotification } from "../utils.js";
 
 // Inicializa Firebase SDKs.
-// Este é o único arquivo que precisa carregar as CDNs de Firebase.
 import "https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js";
 import "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js";
 import "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js";
@@ -28,23 +27,17 @@ try {
     showNotification('error', 'Erro ao conectar com Firebase. Recarregue a página.');
 }
 
-// Adiciona o provedor Google e exporta
 const googleProvider = new firebase.auth.GoogleAuthProvider();
 googleProvider.addScope('profile');
 googleProvider.addScope('email');
 
 export { app, auth, db, googleProvider };
 
-/**
- * Função para login com Google.
- * @returns {Promise<object>} Um objeto com o status da operação.
- */
 export async function signInWithGoogle() {
     try {
         const result = await auth.signInWithPopup(googleProvider);
         const user = result.user;
         
-        // Salvar/atualizar dados do usuário no Firestore
         await db.collection('usuarios').doc(user.uid).set({
             nome: user.displayName,
             email: user.email,
@@ -62,24 +55,15 @@ export async function signInWithGoogle() {
     }
 }
 
-/**
- * Função para registro com email/senha.
- * @param {string} email
- * @param {string} password
- * @param {string} displayName
- * @returns {Promise<object>} Um objeto com o status da operação.
- */
 export async function registerWithEmailPassword(email, password, displayName) {
     try {
         const result = await auth.createUserWithEmailAndPassword(email, password);
         const user = result.user;
         
-        // Atualizar perfil com nome
         await user.updateProfile({
             displayName: displayName
         });
         
-        // Salvar no Firestore
         await db.collection('usuarios').doc(user.uid).set({
             nome: displayName,
             email: email,
@@ -92,21 +76,14 @@ export async function registerWithEmailPassword(email, password, displayName) {
         return { success: true, user };
     } catch (error) {
         console.error('Erro no registro:', error);
-        throw error;
+        return { success: false, error };
     }
 }
 
-/**
- * Função para login com email/senha.
- * @param {string} email
- * @param {string} password
- * @returns {Promise<object>} Um objeto com o status da operação.
- */
 export async function signInWithEmailPassword(email, password) {
     try {
         const result = await auth.signInWithEmailAndPassword(email, password);
         
-        // Atualizar último login
         await db.collection('usuarios').doc(result.user.uid).update({
             ultimoLogin: firebase.firestore.Timestamp.now()
         });
@@ -114,12 +91,10 @@ export async function signInWithEmailPassword(email, password) {
         return { success: true, user: result.user };
     } catch (error) {
         console.error('Erro no login:', error);
-        throw error;
+        return { success: false, error };
     }
 }
 
-
-// Função para vincular jogador ao país no Firestore
 export async function vincularJogadorAoPais(userId, paisId) {
     try {
         await db.collection('paises').doc(paisId).update({
@@ -141,7 +116,6 @@ export async function vincularJogadorAoPais(userId, paisId) {
     }
 }
 
-// Função para verificar se o usuário é narrador/admin
 export async function checkUserPermissions(userId) {
     try {
         const userDoc = await db.collection('usuarios').doc(userId).get();
@@ -159,7 +133,19 @@ export async function checkUserPermissions(userId) {
     }
 }
 
-// Função para obter países disponíveis
+export async function checkPlayerCountry(userId) {
+    try {
+        const userDoc = await db.collection('usuarios').doc(userId).get();
+        if (userDoc.exists && userDoc.data().paisId) {
+            return userDoc.data().paisId;
+        }
+        return null;
+    } catch (error) {
+        console.error('Erro ao verificar país do jogador:', error);
+        return null;
+    }
+}
+
 export async function getAvailableCountries() {
     try {
         const paisesRef = db.collection('paises');
@@ -174,7 +160,6 @@ export async function getAvailableCountries() {
     }
 }
 
-// Função para obter todos os países
 export async function getAllCountries() {
     try {
         const paisesRef = db.collection('paises');
@@ -190,7 +175,6 @@ export async function getAllCountries() {
     }
 }
 
-// Função para obter dados de um único país
 export async function getCountryData(paisId) {
     try {
         const doc = await db.collection('paises').doc(paisId).get();
@@ -201,7 +185,6 @@ export async function getCountryData(paisId) {
     }
 }
 
-// Função para obter a configuração do jogo
 export async function getGameConfig() {
     try {
         const doc = await db.collection('configuracoes').doc('jogo').get();
@@ -212,7 +195,6 @@ export async function getGameConfig() {
     }
 }
 
-// Função para atualizar o turno
 export async function updateTurn(newTurn) {
     try {
         await db.collection('configuracoes').doc('jogo').set({
