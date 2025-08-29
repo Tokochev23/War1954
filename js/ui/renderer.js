@@ -23,60 +23,133 @@ const DOM = {
     userRoleBadge: document.getElementById('user-role-badge'),
 };
 
+/**
+ * Função para limitar um valor entre um mínimo e um máximo.
+ * @param {number} n
+ * @param {number} min
+ * @param {number} max
+ * @returns {number}
+ */
+function clamp(n, min, max) {
+    return Math.max(min, Math.min(max, n));
+}
+
+/**
+ * Mapeia um valor de estabilidade para uma string descritiva.
+ * @param {number} stability - O valor de estabilidade (0-100).
+ * @returns {{label: string, tone: string}} - A string e as classes de cor.
+ */
+function getStabilityInfo(stability) {
+    if (stability <= 20) return { label: "Anarquia", tone: "bg-rose-500/15 text-rose-300 border-rose-400/30" };
+    if (stability <= 49) return { label: "Instável", tone: "bg-amber-500/15 text-amber-300 border-amber-400/30" };
+    if (stability <= 74) return { label: "Neutro", tone: "bg-sky-500/15 text-sky-300 border-sky-400/30" };
+    return { label: "Tranquilo", tone: "bg-emerald-500/15 text-emerald-300 border-emerald-400/30" };
+}
+
+/**
+ * Calcula o WPI (War Power Index) com base no PIB per capita e Tecnologia.
+ * @param {object} country - Objeto com os dados do país.
+ * @returns {number} - O WPI calculado.
+ */
+function calculateWPI(country) {
+    const pibPerCapita = (parseFloat(country.PIB) || 0) / (parseFloat(country.Populacao) || 1);
+    const normalizedPib = clamp(pibPerCapita, 0, 20000) / 200; // Normaliza para 0..100
+    const score = Math.round((normalizedPib + (parseFloat(country.Tecnologia) || 0)) / 2);
+    return clamp(score, 1, 100);
+}
+
 // Renderiza a lista de países
 export function renderPublicCountries(countries) {
     DOM.countryListContainer.innerHTML = '';
     
-    countries.forEach((country) => {
-        const stability = parseFloat(String(country.Estabilidade).replace(/%/g, '')).toFixed(0);
-        const pib = formatCurrency(country.PIB || '0');
-        const isPublic = country.Visibilidade && country.Visibilidade.trim() === 'Público';
+    // Filtra para mostrar apenas países com dados essenciais para o novo painel
+    const validCountries = countries.filter(country => country.Pais && country.Bandeira && country.PIB && country.Populacao && country.ModeloPolitico && country.Estabilidade && country.Urbanizacao && country.Tecnologia);
 
+    validCountries.forEach((country) => {
+        const wpi = calculateWPI(country);
+        const stabilityInfo = getStabilityInfo(parseFloat(country.Estabilidade) || 0);
+        const formattedPib = formatCurrency(country.PIB || '0');
+        const formattedPopulation = Number(country.Populacao || 0).toLocaleString('pt-BR');
+        
         const cardHtml = `
-        <div class="group rounded-2xl bg-bg-soft border border-bg-ring/70 p-4 hover:border-slate-500/60 hover:bg-white/[0.04] transition-all duration-300 cursor-pointer transform hover:scale-[1.02]">
-            <div class="flex items-center justify-between mb-3">
-                <div class="text-sm text-slate-400">#${String(country.id).padStart(2, '0')}</div>
+        <button class="group relative w-full rounded-xl border border-slate-800/80 bg-slate-900/60 p-3 text-left shadow-sm transition hover:-translate-y-[1px] hover:border-slate-700/80 hover:shadow-md">
+            <!-- Header: bandeira + nome + WPI -->
+            <div class="flex items-center justify-between gap-3">
                 <div class="flex items-center gap-2">
-                    <div class="text-xs rounded-md px-2 py-0.5 border ${
-                        stability >= 70 ? 'border-emerald-600/30 text-emerald-300/90 bg-emerald-500/10' :
-                        stability >= 40 ? 'border-yellow-600/30 text-yellow-300/90 bg-yellow-500/10' :
-                        'border-red-600/30 text-red-300/90 bg-red-500/10'
-                    }">
-                        ${stability}/100
+                    <div class="h-7 w-10 flex-shrink-0 grid place-items-center rounded-md ring-1 ring-white/10 bg-slate-800 text-2xl">
+                        ${country.Bandeera}
                     </div>
-                    <div class="text-xs px-2 py-0.5 rounded-md ${
-                        isPublic ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' :
-                        'bg-slate-500/10 text-slate-400 border border-slate-500/20'
-                    }">
-                        ${isPublic ? 'Público' : 'Privado'}
+                    <div class="min-w-0">
+                        <div class="truncate text-sm font-semibold text-slate-100">
+                            ${country.Pais}
+                        </div>
+                        <div class="text-[10px] text-slate-400">PIB pc ${formatCurrency((parseFloat(country.PIB) || 0) / (parseFloat(country.Populacao) || 1))}</div>
                     </div>
                 </div>
-            </div>
-            
-            <div class="mb-2">
-                <div class="font-semibold text-lg group-hover:text-white transition-colors">${country.Pais}</div>
-                <div class="text-sm text-slate-400">PIB: ${pib}</div>
-            </div>
-            
-            <div class="flex items-center justify-between text-xs">
-                <div class="text-slate-500">Estabilidade</div>
-                <div class="flex items-center gap-1">
-                    <div class="w-12 h-1 bg-slate-700 rounded-full overflow-hidden">
-                        <div class="h-full ${
-                            stability >= 70 ? 'bg-emerald-400' :
-                            stability >= 40 ? 'bg-yellow-400' : 'bg-red-400'
-                        } transition-all duration-500" style="width: ${stability}%"></div>
+                <div class="shrink-0">
+                    <div class="grid place-items-center h-8 w-8 rounded-lg border border-white/10 bg-slate-900/70 text-[11px] font-bold text-slate-100 shadow-inner">
+                        ${wpi}
                     </div>
-                    <span class="text-slate-400">${stability}%</span>
+                    <div class="mt-0.5 text-[9px] text-center uppercase text-slate-500">WPI</div>
                 </div>
             </div>
-        </div>
+
+            <!-- Linha 1: PIB + Pop -->
+            <div class="mt-3 grid grid-cols-2 gap-2 text-[11px]">
+                <div class="rounded-md border border-white/5 bg-slate-900/50 px-2 py-1">
+                    <div class="flex items-center gap-1 text-slate-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="22 17 13.5 8.5 8.5 13.5 2 7"></polyline>
+                            <polyline points="16 17 22 17 22 11"></polyline>
+                        </svg>
+                        PIB
+                    </div>
+                    <div class="mt-0.5 font-medium text-slate-100 leading-none">${formattedPib}</div>
+                </div>
+                <div class="rounded-md border border-white/5 bg-slate-900/50 px-2 py-1">
+                    <div class="flex items-center gap-1 text-slate-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                            <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                        </svg>
+                        Pop.
+                    </div>
+                    <div class="mt-0.5 font-medium text-slate-100 leading-none">${formattedPopulation}</div>
+                </div>
+            </div>
+
+            <!-- Linha 2: Modelo + Estabilidade (texto) -->
+            <div class="mt-2 flex items-center justify-between gap-2">
+                <div class="truncate text-[11px] text-slate-300" title="${country.ModeloPolitico}">
+                    <span class="text-slate-400">Modelo:</span> ${country.ModeloPolitico}
+                </div>
+                <span class="inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-[10px] font-medium ${stabilityInfo.tone}">
+                    ${stabilityInfo.label}
+                </span>
+            </div>
+
+            <!-- Urbanização bar -->
+            <div class="mt-2 text-[10px] text-slate-400 flex items-center gap-1">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="2" width="18" height="20" rx="2" ry="2"></rect>
+                    <line x1="12" y1="6" x2="12" y2="18"></line>
+                    <line x1="6" y1="12" x2="18" y2="12"></line>
+                </svg>
+                Urbanização
+                <span class="ml-auto text-slate-300">${country.Urbanizacao}%</span>
+            </div>
+            <div class="mt-1 h-1.5 w-full rounded-full bg-slate-800/70 ring-1 ring-white/5 overflow-hidden">
+                <div class="h-full rounded-full bg-gradient-to-r from-indigo-400 via-sky-400 to-emerald-300" style="width: ${clamp(country.Urbanizacao, 0, 100)}%"></div>
+            </div>
+        </button>
         `;
         DOM.countryListContainer.innerHTML += cardHtml;
     });
 
-    DOM.totalCountriesBadge.textContent = `${countries.length} países`;
-    if (countries.length === 0) {
+    DOM.totalCountriesBadge.textContent = `${validCountries.length} países`;
+    if (validCountries.length === 0) {
         DOM.emptyState.classList.remove('hidden');
     } else {
         DOM.emptyState.classList.add('hidden');
@@ -151,117 +224,4 @@ export function fillPlayerPanel(playerData, currentTurn) {
         DOM.playerHistorico.innerHTML = '<div class="text-sm text-slate-400 italic">Nenhum histórico disponível</div>';
         DOM.playerPanel.style.display = 'none';
     }
-}
-
-// Cria o modal de seleção de país
-export function createCountrySelectionModal(availableCountries) {
-    const modal = document.createElement('div');
-    modal.id = 'selecao-pais-modal';
-    modal.className = 'fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm';
-    
-    modal.innerHTML = `
-    <div class="w-full max-w-4xl max-h-[80vh] rounded-2xl bg-bg-soft border border-bg-ring/70 p-6 shadow-card animate-slide-up overflow-y-auto">
-        <div class="text-center mb-6">
-            <div class="h-16 w-16 rounded-2xl bg-brand-500/15 ring-1 ring-brand-500/30 grid place-items-center mx-auto mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-brand-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-            </div>
-            <h2 class="text-2xl font-bold">Escolha seu País</h2>
-            <p class="text-sm text-slate-400 mt-2">Selecione o país que você governará durante a Guerra Fria de 1954</p>
-            <p class="text-xs text-slate-500 mt-1">${availableCountries.length} países disponíveis</p>
-        </div>
-        
-        <div class="mb-6">
-            <div class="relative">
-                <input type="text" id="busca-pais" placeholder="Buscar país por nome..." 
-                       class="w-full rounded-xl bg-bg border border-bg-ring/70 p-3 pl-10 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/50">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-            </div>
-        </div>
-        
-        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 overflow-y-auto mb-6" id="lista-paises-disponiveis">
-            ${availableCountries.map(country => `
-            <div class="pais-option group cursor-pointer rounded-xl bg-bg border border-bg-ring/70 p-4 hover:border-brand-500/50 hover:bg-brand-500/5 transition-all duration-200" 
-                 data-pais-id="${country.id}" data-pais-nome="${country.Pais}">
-                <div class="flex items-center justify-between mb-2">
-                    <div class="text-sm text-slate-400">Disponível</div>
-                    <div class="text-xs px-2 py-1 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                        Livre
-                    </div>
-                </div>
-                <div class="font-semibold text-lg group-hover:text-brand-400 transition-colors mb-2">${country.Pais}</div>
-                <div class="text-sm text-slate-400 space-y-1">
-                    <div>💰 PIB: ${formatCurrency(country.PIB || 0)}</div>
-                    <div>👥 População: ${Number(country.Populacao || 0).toLocaleString()}</div>
-                    <div>📊 Estabilidade: ${country.Estabilidade || 0}/100</div>
-                    <div>🏭 Tecnologia: ${country.Tecnologia || 0}</div>
-                </div>
-                <div class="mt-3 flex justify-between text-xs">
-                    <span class="text-slate-500">⚔️ ${country.Exercito || 0}</span>
-                    <span class="text-slate-500">🚢 ${country.Marinha || 0}</span>
-                    <span class="text-slate-500">✈️ ${country.Aeronautica || 0}</span>
-                    <span class="text-slate-500">🚗 ${country.Veiculos || 0}</span>
-                </div>
-            </div>
-            `).join('')}
-        </div>
-        
-        <div class="flex justify-between items-center">
-            <div class="text-sm text-slate-400">
-                <span id="paises-visiveis">${availableCountries.length}</span> de ${availableCountries.length} países mostrados
-            </div>
-            <div class="flex gap-3">
-                <button id="cancelar-selecao" class="px-4 py-2 text-slate-400 hover:text-slate-200 transition">
-                    Cancelar
-                </button>
-                <button id="confirmar-selecao" disabled 
-                        class="px-6 py-3 bg-brand-500 text-slate-950 font-semibold rounded-xl disabled:opacity-50 disabled:cursor-not-allowed hover:bg-brand-400 transition-all">
-                    Confirmar Seleção
-                </button>
-            </div>
-        </div>
-    </div>
-    `;
-    
-    document.body.appendChild(modal);
-    return modal;
-}
-
-// Atualiza a interface do narrador
-export function updateNarratorUI(isNarrator, isAdmin) {
-    if (isNarrator) {
-        DOM.narratorTools.style.display = 'block';
-        const badge = isAdmin ? 'Admin' : 'Narrador';
-        const badgeColor = isAdmin ? 'bg-red-500/10 text-red-400 border-red-500/20' : 'bg-brand-500/10 text-brand-400 border-brand-500/20';
-        DOM.userRoleBadge.className = `text-xs px-2 py-1 rounded-full ${badgeColor}`;
-        DOM.userRoleBadge.textContent = badge;
-    } else {
-        DOM.narratorTools.style.display = 'none';
-    }
-}
-
-// Funções de UI para login
-export function showLoginModal() {
-    document.getElementById('login-modal').classList.remove('hidden');
-}
-
-export function hideLoginModal() {
-    document.getElementById('login-modal').classList.add('hidden');
-    document.getElementById('login-error-message').classList.add('hidden');
-}
-
-export function setLoginLoading(isLoading) {
-    const loginSubmit = document.getElementById('login-submit');
-    loginSubmit.disabled = isLoading;
-    loginSubmit.querySelector('.submit-text').style.display = isLoading ? 'none' : 'inline';
-    loginSubmit.querySelector('.submit-loading').classList.toggle('hidden', !isLoading);
-}
-
-export function setLoginError(message) {
-    const errorMessage = document.getElementById('login-error-message');
-    errorMessage.textContent = message;
-    errorMessage.classList.remove('hidden');
 }
