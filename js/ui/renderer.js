@@ -599,12 +599,6 @@ export function createCountrySelectionModal(availableCountries) {
  * Renderiza o painel completo do país.
  * @param {object} country - Objeto com todos os dados do país.
  */
-export function renderDetailedCountryPanel(country) {
-    if (!DOM.countryPanelContent) {
-        console.error('Container do painel do país não encontrado');
-        return;
-    }
-
     const wpi = calculateWPI(country);
     const stabilityInfo = getStabilityInfo(parseFloat(country.Estabilidade) || 0);
 
