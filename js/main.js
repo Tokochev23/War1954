@@ -16,8 +16,7 @@ import {
   updateKPIs,
   fillPlayerPanel,
   createCountrySelectionModal,
-  updateNarratorUI,
-  renderDetailedCountryPanel
+  updateNarratorUI
 } from "./ui/renderer.js";
 import { showNotification } from "./utils.js";
 
@@ -189,12 +188,9 @@ function addCountryEventListeners() {
       const countryData = appState.allCountries.find(c => c.id === countryId);
       
       if (countryData) {
-        console.log("Abrindo painel do país:", countryData.Pais);
-        renderDetailedCountryPanel(countryData);
-        countryPanelModal.classList.remove('hidden');
-      } else {
-        console.error("País não encontrado:", countryId);
-        showNotification('error', 'Dados do país não encontrados.');
+        console.log("País clicado:", countryData.Pais);
+        // Por enquanto só mostrar no console - painel detalhado virá depois
+        showNotification('info', `Você clicou em ${countryData.Pais}`);
       }
     });
   });
