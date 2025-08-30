@@ -806,7 +806,6 @@ export function createCountrySelectionModal(availableCountries) {
         DOM.countryPanelModal.classList.remove('opacity-0');
         DOM.countryPanelContent.parentElement.classList.remove('-translate-y-2');
     }, 10);
-}
 
 // Atualiza os KPIs principais
 export function updateKPIs(allCountries) {
