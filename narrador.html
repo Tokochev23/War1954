@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WAR • Painel do Narrador</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22%3E%3Crect width=%2216%22 height=%2216%22 rx=%223%22 fill=%22%23ffb400%22/%3E%3Ctext x=%228%22 y=%2211%22 font-size=%2210%22 text-anchor=%22middle%22 fill=%22%230b1020%22%3EN%3C/text%3E%3C/svg%3E" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: { colors: { bg: { DEFAULT: "#0b1020", soft: "#10172a", ring: "#1e293b" }, brand: { 500: "#ffb400" } } } } }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root { color-scheme: dark; }
+    body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif; background: #0b1020; color: #e2e8f0; }
+  </style>
+</head>
+<body class="bg-bg text-slate-200">
+  <header class="border-b border-bg-ring/70 sticky top-0 z-40 bg-bg/90 backdrop-blur">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="h-9 w-9 rounded-xl bg-brand-500/15 ring-1 ring-brand-500/30 grid place-items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-brand-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3zM12 3v18M4 7.5l8 4.5m8-4.5l-8 4.5" />
+          </svg>
+        </div>
+        <div>
+          <div class="text-sm text-slate-300/80">WAR • Painel do Narrador</div>
+          <div class="font-extrabold tracking-tight">Administração</div>
+        </div>
+      </div>
+      <nav class="hidden md:flex items-center gap-6 text-sm">
+        <a href="index.html" class="hover:text-white/90 transition">Início</a>
+        <a href="#" id="logout-link" class="hover:text-white/90 transition">Sair</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+    <div id="gate" class="hidden rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-red-300">
+      Acesso negado. Esta página é exclusiva para narradores.
+    </div>
+
+    <div id="admin-root" class="hidden grid grid-cols-1 lg:grid-cols-[220px_1fr] gap-6">
+      <aside class="space-y-4">
+        <div class="rounded-xl border border-bg-ring/70 p-4 bg-bg-soft">
+          <div class="text-xs text-slate-400">Turno atual</div>
+          <div id="turno-atual-admin" class="text-xl font-extrabold text-emerald-400">#–</div>
+          <div class="mt-3 grid grid-cols-1 gap-2">
+            <button id="btn-recarregar" class="rounded-lg border border-bg-ring/70 px-3 py-1.5 text-sm hover:border-slate-500/60 hover:bg-white/5">Recarregar</button>
+            <div>
+              <label class="text-xs text-slate-400">Alterar turno</label>
+              <div class="mt-1 flex gap-2">
+                <input id="turno-input" type="number" min="0" class="w-24 rounded-lg bg-bg border border-bg-ring/70 p-2 text-sm" placeholder="#" />
+                <button id="btn-salvar-turno" class="rounded-lg bg-brand-500/90 text-slate-950 font-semibold px-3 py-1.5 hover:bg-brand-400">Salvar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="rounded-xl border border-bg-ring/70 p-3 bg-bg-soft">
+          <div class="text-sm font-semibold mb-2">Seções</div>
+          <div id="menu-secoes" class="space-y-1"></div>
+        </div>
+        <div class="rounded-xl border border-bg-ring/70 p-3 bg-bg-soft">
+          <div class="text-sm font-semibold mb-2">Catálogo de Campos</div>
+          <div class="space-y-2">
+            <button id="btn-salvar-catalogo" class="w-full rounded-lg bg-brand-500/90 text-slate-950 font-semibold px-3 py-1.5 hover:bg-brand-400">Salvar catálogo</button>
+            <button id="btn-carregar-catalogo" class="w-full rounded-lg border border-bg-ring/70 px-3 py-1.5 hover:border-slate-500/60 hover:bg-white/5">Carregar do servidor</button>
+          </div>
+        </div>
+      </aside>
+
+      <section class="space-y-4">
+        <div class="rounded-xl border border-bg-ring/70 p-4 bg-bg-soft">
+          <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+            <div class="flex-1">
+              <label class="text-xs text-slate-400">País</label>
+              <select id="select-pais" class="mt-1 w-full rounded-lg bg-bg border border-bg-ring/70 p-2 text-sm"></select>
+            </div>
+            <div class="flex-none w-full sm:w-auto">
+              <label class="text-xs text-slate-400">Seção</label>
+              <select id="select-secao" class="mt-1 w-full rounded-lg bg-bg border border-bg-ring/70 p-2 text-sm"></select>
+            </div>
+            <div class="flex-none sm:self-end">
+              <button id="btn-salvar-secao" class="mt-6 sm:mt-0 rounded-lg bg-emerald-500 text-slate-950 font-semibold px-4 py-2 hover:bg-emerald-400">Salvar</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="rounded-xl border border-bg-ring/70 p-4 bg-bg-soft">
+          <div id="form-secao" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+        </div>
+
+        <div class="rounded-xl border border-bg-ring/70 p-4 bg-bg-soft">
+          <div class="flex items-center justify-between mb-3">
+            <div class="text-sm font-semibold">Adicionar campo na seção atual</div>
+            <button id="btn-adicionar-campo" class="rounded-lg border border-bg-ring/70 px-3 py-1.5 text-sm hover:border-slate-500/60 hover:bg-white/5">+ Campo</button>
+          </div>
+          <div id="lista-campos-secao" class="text-sm text-slate-400">Nenhum campo adicionado.</div>
+        </div>
+
+        <!-- Simulador Econômico -->
+        <div class="rounded-2xl border border-bg-ring/70 p-5 bg-gradient-to-b from-slate-900/60 to-slate-950/70">
+          <h2 class="text-lg font-semibold mb-4">Simulador Econômico</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="text-xs text-slate-400">Investidor</label>
+              <select id="eco-investidor" class="mt-1 w-full rounded-lg bg-bg border border-bg-ring/70 p-2 text-sm"></select>
+            </div>
+            <div>
+              <label class="text-xs text-slate-400">Tipo</label>
+              <div class="mt-1 flex gap-4 text-sm">
+                <label class="inline-flex items-center gap-2"><input type="radio" name="eco-tipo" value="interno" checked>Interno</label>
+                <label class="inline-flex items-center gap-2"><input type="radio" name="eco-tipo" value="externo">Externo (parceria)</label>
+              </div>
+            </div>
+            <div>
+              <label class="text-xs text-slate-400">Parceiro (se externo)</label>
+              <select id="eco-parceiro" class="mt-1 w-full rounded-lg bg-bg border border-bg-ring/70 p-2 text-sm" disabled></select>
+            </div>
+            <div>
+              <label class="text-xs text-slate-400">Investimento (US$)</label>
+              <input id="eco-investimento" type="number" min="0" class="mt-1 w-full rounded-lg bg-bg border border-bg-ring/70 p-2 text-sm" placeholder="1000000" />
+            </div>
+            <div>
+              <label class="text-xs text-slate-400">D12</label>
+              <div class="mt-1 flex gap-2">
+                <input id="eco-d12" type="number" min="1" max="12" class="w-24 rounded-lg bg-bg border border-bg-ring/70 p-2 text-sm" placeholder="-" />
+                <button id="eco-roll" class="rounded-lg border border-bg-ring/70 px-3 py-1.5 text-sm hover:border-slate-500/60 hover:bg-white/5">Rolar D12</button>
+              </div>
+            </div>
+            <div>
+              <label class="text-xs text-slate-400">Bônus/Penalidade do narrador</label>
+              <div class="mt-1 flex items-center gap-3">
+                <input id="eco-bonus" type="range" min="-3" max="3" step="0.5" class="flex-1" />
+                <span id="eco-bonus-label" class="w-14 text-sm text-slate-300 text-right">0%</span>
+              </div>
+            </div>
+            <div class="md:col-span-2">
+              <label class="text-xs text-slate-400">Observações</label>
+              <input id="eco-notas" type="text" class="mt-1 w-full rounded-lg bg-bg border border-bg-ring/70 p-2 text-sm" placeholder="Justificativa do bônus/penalidade, contexto, etc." />
+            </div>
+          </div>
+          <div class="mt-4 grid grid-cols-1 lg:grid-cols-3 gap-4 text-sm">
+            <div class="rounded-xl border border-white/10 p-3">
+              <div class="text-slate-400">Eficiência do país</div>
+              <div class="mt-1" id="eco-eff"></div>
+            </div>
+            <div class="rounded-xl border border-white/10 p-3">
+              <div class="text-slate-400">Fator do dado</div>
+              <div class="mt-1" id="eco-fdado"></div>
+            </div>
+            <div class="rounded-xl border border-white/10 p-3">
+              <div class="text-slate-400">Crescimento previsto</div>
+              <div class="mt-1" id="eco-preview"></div>
+            </div>
+          </div>
+          <div class="mt-4 flex gap-3">
+            <button id="eco-aplicar" class="rounded-lg bg-emerald-500 text-slate-950 font-semibold px-4 py-2 hover:bg-emerald-400">Aplicar</button>
+          </div>
+        </div>
+
+        <!-- Ações do turno (log) -->
+        <div class="rounded-2xl border border-bg-ring/70 p-5 bg-gradient-to-b from-slate-900/60 to-slate-950/70">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="text-lg font-semibold">Ações do turno (investidor selecionado)</h2>
+            <button id="log-recarregar" class="rounded-lg border border-bg-ring/70 px-3 py-1.5 text-sm hover:border-slate-500/60 hover:bg-white/5">Recarregar</button>
+          </div>
+          <div class="text-sm text-slate-400 mb-2">Mostrando somente ações econômicas do turno atual para o investidor escolhido acima.</div>
+          <div id="lista-acoes" class="space-y-2 text-sm"></div>
+        </div>
+
+        <!-- Deltas em Massa -->
+        <div class="rounded-2xl border border-bg-ring/70 p-5 bg-gradient-to-b from-slate-900/60 to-slate-950/70">
+          <h2 class="text-lg font-semibold mb-4">Aplicar Deltas em Massa</h2>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label class="text-xs text-slate-400">PIB (% relativo)</label>
+              <input id="delta-pib" type="number" step="0.1" class="mt-1 w-full rounded-lg bg-bg border border-bg-ring/70 p-2 text-sm" placeholder="ex.: 2 para +2%" />
+            </div>
+            <div>
+              <label class="text-xs text-slate-400">Tecnologia (+pontos)</label>
+              <input id="delta-tec" type="number" step="1" class="mt-1 w-full rounded-lg bg-bg border border-bg-ring/70 p-2 text-sm" placeholder="ex.: 1" />
+            </div>
+            <div>
+              <label class="text-xs text-slate-400">Estabilidade (+pontos)</label>
+              <input id="delta-est" type="number" step="1" class="mt-1 w-full rounded-lg bg-bg border border-bg-ring/70 p-2 text-sm" placeholder="ex.: -1" />
+            </div>
+          </div>
+          <div class="mt-4">
+            <div class="text-xs text-slate-400 mb-2">Selecione os países</div>
+            <div id="delta-paises" class="max-h-60 overflow-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2"></div>
+          </div>
+          <div class="mt-4 flex gap-2">
+            <button id="delta-selecionar-todos" class="rounded-lg border border-bg-ring/70 px-3 py-1.5 text-sm hover:border-slate-500/60 hover:bg-white/5">Selecionar todos</button>
+            <button id="delta-limpar" class="rounded-lg border border-bg-ring/70 px-3 py-1.5 text-sm hover:border-slate-500/60 hover:bg-white/5">Limpar</button>
+            <button id="delta-aplicar" class="ml-auto rounded-lg bg-emerald-500 text-slate-950 font-semibold px-4 py-2 hover:bg-emerald-400">Aplicar deltas</button>
+          </div>
+        </div>
+
+        <!-- Importar CSV por seção -->
+        <div class="rounded-2xl border border-bg-ring/70 p-5 bg-gradient-to-b from-slate-900/60 to-slate-950/70">
+          <h2 class="text-lg font-semibold mb-4">Importar CSV (seção atual)</h2>
+          <div class="text-sm text-slate-400 mb-2">Cole o CSV com a coluna "Pais" e colunas que correspondam às chaves/labels desta seção.</div>
+          <textarea id="csv-input" rows="6" class="w-full rounded-lg bg-bg border border-bg-ring/70 p-2 text-sm" placeholder="Pais,Campo1,Campo2\nBrasil,10,20"></textarea>
+          <div class="mt-3 flex gap-2">
+            <button id="csv-preview" class="rounded-lg border border-bg-ring/70 px-3 py-1.5 text-sm hover:border-slate-500/60 hover:bg-white/5">Pré-visualizar</button>
+            <button id="csv-aplicar" class="rounded-lg bg-emerald-500 text-slate-950 font-semibold px-4 py-2 hover:bg-emerald-400">Aplicar importação</button>
+          </div>
+          <div id="csv-preview-area" class="mt-3 text-sm"></div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script src="./js/services/firebase.js" type="module"></script>
+  <script src="./js/pages/narrador.js" type="module"></script>
+</body>
+</html>
