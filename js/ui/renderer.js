@@ -63,9 +63,41 @@ function calculateWPI(country) {
 
 // Renderiza a lista de países
 export function renderPublicCountries(countries) {
+    if (!DOM.countryListContainer) {
+        console.error('Container de países não encontrado');
+        return;
+    }
+
     DOM.countryListContainer.innerHTML = '';
     
-    const validCountries = countries.filter(country => country.Pais && country.Bandeira && country.PIB && country.Populacao && country.ModeloPolitico && country.Estabilidade && country.Urbanizacao && country.Tecnologia);
+    const validCountries = countries.filter(country => 
+        country.Pais && 
+        country.Bandeira && 
+        country.PIB && 
+        country.Populacao && 
+        country.ModeloPolitico && 
+        country.Estabilidade && 
+        country.Urbanizacao && 
+        country.Tecnologia
+    );
+
+    console.log(`Renderizando ${validCountries.length} países válidos de ${countries.length} total`);
+
+    if (validCountries.length === 0) {
+        DOM.countryListContainer.innerHTML = `
+            <div class="col-span-full text-center py-12">
+                <div class="text-slate-400 mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3zM12 3v18M4 7.5l8 4.5m8-4.5l-8 4.5" />
+                    </svg>
+                </div>
+                <h3 class="text-lg font-medium text-slate-300 mb-2">Nenhum país encontrado</h3>
+                <p class="text-slate-400 text-sm">Verifique a configuração do Firestore ou tente recarregar.</p>
+            </div>
+        `;
+        if (DOM.totalCountriesBadge) DOM.totalCountriesBadge.textContent = '0 países';
+        return;
+    }
 
     validCountries.forEach((country) => {
         const wpi = calculateWPI(country);
@@ -150,20 +182,111 @@ export function renderPublicCountries(countries) {
         DOM.countryListContainer.innerHTML += cardHtml;
     });
 
-    DOM.totalCountriesBadge.textContent = `${validCountries.length} países`;
-    if (validCountries.length === 0) {
-        DOM.emptyState.classList.remove('hidden');
-    } else {
-        DOM.emptyState.classList.add('hidden');
+    if (DOM.totalCountriesBadge) {
+        DOM.totalCountriesBadge.textContent = `${validCountries.length} países`;
     }
 }
 
+// NOVA FUNÇÃO: Atualiza a UI do narrador
+export function updateNarratorUI(isNarrator, isAdmin) {
+    const narratorTools = DOM.narratorTools;
+    const userRoleBadge = DOM.userRoleBadge;
+    
+    if (narratorTools) {
+        if (isNarrator || isAdmin) {
+            narratorTools.style.display = 'block';
+            console.log("Mostrando ferramentas do narrador");
+        } else {
+            narratorTools.style.display = 'none';
+        }
+    }
+    
+    if (userRoleBadge) {
+        if (isAdmin) {
+            userRoleBadge.textContent = 'Admin';
+            userRoleBadge.className = 'text-xs px-2 py-1 rounded-full bg-red-500/10 text-red-400 border border-red-500/20';
+        } else if (isNarrador) {
+            userRoleBadge.textContent = 'Narrador';
+            userRoleBadge.className = 'text-xs px-2 py-1 rounded-full bg-brand-500/10 text-brand-400 border border-brand-500/20';
+        } else {
+            userRoleBadge.textContent = 'Jogador';
+            userRoleBadge.className = 'text-xs px-2 py-1 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20';
+        }
+    }
+}
+
+// NOVA FUNÇÃO: Cria modal de seleção de país
+export function createCountrySelectionModal(availableCountries) {
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm';
+    
+    const modalContent = `
+        <div class="w-full max-w-2xl max-h-[80vh] rounded-2xl bg-bg-soft border border-bg-ring/70 p-6 overflow-hidden">
+            <div class="text-center mb-6">
+                <h2 class="text-xl font-bold text-slate-100">Escolha seu País</h2>
+                <p class="text-sm text-slate-400 mt-1">Selecione um país para governar no RPG</p>
+            </div>
+            
+            <div class="mb-4">
+                <input 
+                    type="text" 
+                    id="busca-pais" 
+                    placeholder="Buscar país..." 
+                    class="w-full rounded-xl bg-bg border border-bg-ring/70 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500/50 transition-all"
+                >
+                <div class="mt-2 text-xs text-slate-400">
+                    Mostrando <span id="paises-visiveis">${availableCountries.length}</span> países disponíveis
+                </div>
+            </div>
+            
+            <div class="max-h-96 overflow-y-auto space-y-2">
+                ${availableCountries.map(country => `
+                    <div class="pais-option rounded-xl border border-bg-ring/70 p-3 cursor-pointer hover:bg-white/5 hover:border-slate-500/60 transition-all" 
+                         data-pais-id="${country.id}" 
+                         data-pais-nome="${country.Pais}">
+                        <div class="flex items-center gap-3">
+                            <div class="text-2xl">${country.Bandeira || '🏴'}</div>
+                            <div>
+                                <div class="font-medium text-slate-100">${country.Pais}</div>
+                                <div class="text-xs text-slate-400">
+                                    PIB: ${formatCurrency(country.PIB || 0)} • 
+                                    Pop: ${Number(country.Populacao || 0).toLocaleString('pt-BR')} • 
+                                    ${country.ModeloPolitico || 'N/A'}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+            
+            <div class="mt-6 flex gap-3">
+                <button id="cancelar-selecao" class="flex-1 rounded-xl border border-bg-ring/70 px-4 py-2.5 text-slate-300 hover:bg-white/5 hover:border-slate-500/60 transition-all">
+                    Cancelar
+                </button>
+                <button id="confirmar-selecao" class="flex-1 rounded-xl bg-brand-500 px-4 py-2.5 text-slate-950 font-semibold hover:bg-brand-400 transition-all" disabled>
+                    Confirmar Seleção
+                </button>
+            </div>
+        </div>
+    `;
+    
+    modal.innerHTML = modalContent;
+    document.body.appendChild(modal);
+    console.log(`Modal de seleção criado com ${availableCountries.length} países`);
+    
+    return modal;
+}
 
 /**
  * Renderiza o painel completo do país.
  * @param {object} country - Objeto com todos os dados do país.
  */
 export function renderDetailedCountryPanel(country) {
+    if (!DOM.countryPanelContent) {
+        console.error('Container do painel do país não encontrado');
+        return;
+    }
+
     const wpi = calculateWPI(country);
     const stabilityInfo = getStabilityInfo(parseFloat(country.Estabilidade) || 0);
 
@@ -384,61 +507,71 @@ export function updateKPIs(allCountries) {
     const avgStability = stabilities.length > 0 ? stabilities.reduce((sum, s) => sum + s, 0) / stabilities.length : 0;
     const publicCountries = allCountries.filter(c => c.Visibilidade && c.Visibilidade.trim() === 'Público').length;
 
-    animateCounter('total-players', activePlayers.length);
-    DOM.pibMedio.textContent = formatCurrency(avgPib);
-    DOM.estabilidadeMedia.textContent = `${Math.round(avgStability)}/100`;
-    animateCounter('paises-publicos', publicCountries);
+    if (DOM.totalPlayers) animateCounter('total-players', activePlayers.length);
+    if (DOM.pibMedio) DOM.pibMedio.textContent = formatCurrency(avgPib);
+    if (DOM.estabilidadeMedia) DOM.estabilidadeMedia.textContent = `${Math.round(avgStability)}/100`;
+    if (DOM.paisesPublicos) animateCounter('paises-publicos', publicCountries);
+    
+    console.log(`KPIs atualizados: ${activePlayers.length} jogadores ativos, ${publicCountries} países públicos`);
 }
 
 // Preenche o painel do jogador com seus dados
 export function fillPlayerPanel(playerData, currentTurn) {
-    if (playerData) {
-        DOM.playerCountryName.textContent = playerData.Pais || 'País do Jogador';
-        DOM.playerCurrentTurn.textContent = currentTurn;
-        DOM.playerPib.textContent = formatCurrency(playerData.PIB || 0);
-        DOM.playerEstabilidade.textContent = `${Number(playerData.Estabilidade) || 0}/100`;
-        DOM.playerCombustivel.textContent = playerData.Combustivel || '50';
+    if (playerData && DOM.playerPanel) {
+        if (DOM.playerCountryName) DOM.playerCountryName.textContent = playerData.Pais || 'País do Jogador';
+        if (DOM.playerCurrentTurn) DOM.playerCurrentTurn.textContent = currentTurn;
+        if (DOM.playerPib) DOM.playerPib.textContent = formatCurrency(playerData.PIB || 0);
+        if (DOM.playerEstabilidade) DOM.playerEstabilidade.textContent = `${Number(playerData.Estabilidade) || 0}/100`;
+        if (DOM.playerCombustivel) DOM.playerCombustivel.textContent = playerData.Combustivel || '50';
         
         // Deltas (variações) - aprimorar depois
-        DOM.playerPibDelta.innerHTML = '<span class="text-slate-400">Sem histórico</span>';
-        DOM.playerEstabilidadeDelta.innerHTML = '<span class="text-slate-400">Sem histórico</span>';
-        DOM.playerCombustivelDelta.innerHTML = '<span class="text-slate-400">Sem histórico</span>';
+        if (DOM.playerPibDelta) DOM.playerPibDelta.innerHTML = '<span class="text-slate-400">Sem histórico</span>';
+        if (DOM.playerEstabilidadeDelta) DOM.playerEstabilidadeDelta.innerHTML = '<span class="text-slate-400">Sem histórico</span>';
+        if (DOM.playerCombustivelDelta) DOM.playerCombustivelDelta.innerHTML = '<span class="text-slate-400">Sem histórico</span>';
         
         // Histórico simulado
-        DOM.playerHistorico.innerHTML = `
-            <div class="text-sm text-slate-300 border-l-2 border-emerald-500/30 pl-3 mb-2">
-                <div class="font-medium">Turno ${currentTurn} (atual)</div>
-                <div class="text-xs text-slate-400">
-                    PIB: ${formatCurrency(playerData.PIB)} • 
-                    Estab: ${playerData.Estabilidade}/100 • 
-                    Pop: ${Number(playerData.Populacao || 0).toLocaleString()}
+        if (DOM.playerHistorico) {
+            DOM.playerHistorico.innerHTML = `
+                <div class="text-sm text-slate-300 border-l-2 border-emerald-500/30 pl-3 mb-2">
+                    <div class="font-medium">Turno ${currentTurn} (atual)</div>
+                    <div class="text-xs text-slate-400">
+                        PIB: ${formatCurrency(playerData.PIB)} • 
+                        Estab: ${playerData.Estabilidade}/100 • 
+                        Pop: ${Number(playerData.Populacao || 0).toLocaleString()}
+                    </div>
                 </div>
-            </div>
-            <div class="text-sm text-slate-300 border-l-2 border-blue-500/30 pl-3 mb-2">
-                <div class="font-medium">Dados Iniciais</div>
-                <div class="text-xs text-slate-400">
-                    Tecnologia: ${playerData.Tecnologia || 0} • 
-                    Urbanização: ${playerData.Urbanizacao || 0}% • 
-                    Burocracia: ${playerData.Burocracia || 0}%
+                <div class="text-sm text-slate-300 border-l-2 border-blue-500/30 pl-3 mb-2">
+                    <div class="font-medium">Dados Iniciais</div>
+                    <div class="text-xs text-slate-400">
+                        Tecnologia: ${playerData.Tecnologia || 0} • 
+                        Urbanização: ${playerData.Urbanizacao || 0}% • 
+                        Burocracia: ${playerData.Burocracia || 0}%
+                    </div>
                 </div>
-            </div>
-            <div class="text-sm text-slate-300 border-l-2 border-purple-500/30 pl-3">
-                <div class="font-medium">Forças Militares</div>
-                <div class="text-xs text-slate-400">
-                    ⚔️ Exército: ${playerData.Exercito || 0} • 
-                    🚢 Marinha: ${playerData.Marinha || 0} • 
-                    ✈️ Aeronáutica: ${playerData.Aeronautica || 0}
+                <div class="text-sm text-slate-300 border-l-2 border-purple-500/30 pl-3">
+                    <div class="font-medium">Forças Militares</div>
+                    <div class="text-xs text-slate-400">
+                        ⚔️ Exército: ${playerData.Exercito || 0} • 
+                        🚢 Marinha: ${playerData.Marinha || 0} • 
+                        ✈️ Aeronáutica: ${playerData.Aeronautica || 0}
+                    </div>
                 </div>
-            </div>
-        `;
+            `;
+        }
         
         const isTurnLate = playerData.TurnoUltimaAtualizacao < currentTurn;
-        isTurnLate ? DOM.playerNotifications.classList.remove('hidden') : DOM.playerNotifications.classList.add('hidden');
+        if (DOM.playerNotifications) {
+            isTurnLate ? DOM.playerNotifications.classList.remove('hidden') : DOM.playerNotifications.classList.add('hidden');
+        }
 
         DOM.playerPanel.style.display = 'block';
+        console.log("Painel do jogador preenchido:", playerData.Pais);
     } else {
-        DOM.playerCountryName.textContent = 'Carregando...';
-        DOM.playerHistorico.innerHTML = '<div class="text-sm text-slate-400 italic">Nenhum histórico disponível</div>';
-        DOM.playerPanel.style.display = 'none';
+        if (DOM.playerCountryName) DOM.playerCountryName.textContent = 'Carregando...';
+        if (DOM.playerHistorico) DOM.playerHistorico.innerHTML = '<div class="text-sm text-slate-400 italic">Nenhum histórico disponível</div>';
+        if (DOM.playerPanel) DOM.playerPanel.style.display = 'none';
+        console.log("Painel do jogador ocultado");
     }
 }
+
+            <!--
