@@ -885,5 +885,3 @@ export function fillPlayerPanel(playerData, currentTurn) {
         console.log("Painel do jogador ocultado");
     }
 }
-
-            <!--
