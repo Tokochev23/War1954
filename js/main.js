@@ -134,6 +134,12 @@ async function loadSiteData() {
       updateKPIs(appState.allCountries);
       filterAndRenderCountries();
       
+      // Atualizar turno atual na interface
+      const turnoAtualElement = document.getElementById('turno-atual');
+      if (turnoAtualElement && appState.gameConfig && appState.gameConfig.turnoAtual) {
+        turnoAtualElement.textContent = `#${appState.gameConfig.turnoAtual}`;
+      }
+      
       // Esconder loading
       document.querySelectorAll('.loading-shimmer').forEach(el => el.style.display = 'none');
       appState.isDataLoaded = true;
